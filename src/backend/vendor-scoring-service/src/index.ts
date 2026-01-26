@@ -11,3 +11,6 @@ export const VERSION = '1.0.0';
 
 // Export rule-based scoring components
 export * from './rules/index.js';
+
+// Export ML integration components
+export * from './ml/index.js';
