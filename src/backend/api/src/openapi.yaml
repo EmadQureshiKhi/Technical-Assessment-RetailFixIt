@@ -1,0 +1,605 @@
+openapi: 3.0.3
+info:
+  title: RetailFixIt Vendor Dispatch API
+  description: |
+    AI-Orchestrated Vendor Dispatch System API for RetailFixIt.
+    
+    This API provides endpoints for:
+    - Generating vendor recommendations for jobs
+    - Recording vendor overrides with audit trail
+    - Managing authentication and authorization
+    
+    ## Authentication
+    All endpoints require Azure AD authentication via Bearer token.
+    Include the token in the Authorization header: `Bearer <token>`
+    
+    ## Rate Limiting
+    API requests are rate limited to prevent abuse:
+    - Standard endpoints: 100 requests per minute
+    - Sensitive endpoints: 10 requests per minute
+    
+    Rate limit headers are included in all responses:
+    - `X-RateLimit-Limit`: Maximum requests allowed
+    - `X-RateLimit-Remaining`: Requests remaining in window
+    - `X-RateLimit-Reset`: Unix timestamp when limit resets
+  version: 1.0.0
+  contact:
+    name: RetailFixIt Engineering
+    email: engineering@retailfixit.example.com
+  license:
+    name: Proprietary
+    
+servers:
+  - url: https://api.retailfixit.example.com/api/v1
+    description: Production server
+  - url: https://api-staging.retailfixit.example.com/api/v1
+    description: Staging server
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+tags:
+  - name: Recommendations
+    description: Vendor recommendation endpoints
+  - name: Overrides
+    description: Vendor override endpoints
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  /recommendations:
+    post:
+      tags:
+        - Recommendations
+      summary: Generate vendor recommendations
+      description: |
+        Generates ranked vendor recommendations for a job request.
+        Returns top 3-5 vendors with scores, explanations, and confidence levels.
+      operationId: createRecommendation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+            example:
+              jobId: "550e8400-e29b-41d4-a716-446655440000"
+              jobType: "repair"
+              location:
+                latitude: 40.7128
+                longitude: -74.0060
+                address: "123 Main St"
+                city: "New York"
+                state: "NY"
+                zipCode: "10001"
+                serviceRegion: "Northeast"
+              urgencyLevel: "medium"
+              slaDeadline: "2024-01-15T18:00:00Z"
+              requiredCertifications: ["HVAC", "Electrical"]
+              customerTier: "premium"
+      responses:
+        '200':
+          description: Successful recommendation generation
+          headers:
+            X-Correlation-ID:
+              schema:
+                type: string
+              description: Correlation ID for request tracing
+            X-Request-ID:
+              schema:
+                type: string
+              description: Unique request identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /recommendations/{jobId}:
+    get:
+      tags:
+        - Recommendations
+      summary: Get recommendations for a job
+      description: Retrieves existing recommendations for a specific job.
+      operationId: getRecommendation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Job identifier
+      responses:
+        '200':
+          description: Recommendations found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+        '400':
+          description: Invalid job ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Recommendations not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /overrides:
+    post:
+      tags:
+        - Overrides
+      summary: Record a vendor override
+      description: |
+        Records a manual vendor override with required reason.
+        The override is logged to the audit trail for compliance.
+      operationId: createOverride
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OverrideRequest'
+            example:
+              jobId: "550e8400-e29b-41d4-a716-446655440000"
+              originalVendorId: "550e8400-e29b-41d4-a716-446655440001"
+              selectedVendorId: "550e8400-e29b-41d4-a716-446655440002"
+              overrideReason: "Customer specifically requested this vendor due to prior relationship"
+              overrideCategory: "relationship"
+      responses:
+        '201':
+          description: Override recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OverrideResponse'
+        '400':
+          description: Validation error (e.g., missing reason)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions for override
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /overrides/{jobId}:
+    get:
+      tags:
+        - Overrides
+      summary: Get override history for a job
+      description: Retrieves all overrides recorded for a specific job.
+      operationId: getOverrides
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Job identifier
+      responses:
+        '200':
+          description: Override history found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OverrideHistoryResponse'
+        '404':
+          description: No overrides found for job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Returns the health status of the API service.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Azure AD JWT token
+
+  schemas:
+    RecommendationRequest:
+      type: object
+      required:
+        - jobId
+        - jobType
+        - location
+        - urgencyLevel
+        - slaDeadline
+        - requiredCertifications
+        - customerTier
+      properties:
+        jobId:
+          type: string
+          format: uuid
+          description: Unique job identifier
+        jobType:
+          type: string
+          enum: [repair, installation, maintenance, inspection]
+          description: Type of job
+        location:
+          $ref: '#/components/schemas/GeoLocation'
+        urgencyLevel:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Job urgency level
+        slaDeadline:
+          type: string
+          format: date-time
+          description: SLA deadline for job completion
+        requiredCertifications:
+          type: array
+          items:
+            type: string
+          description: Required vendor certifications
+        customerTier:
+          type: string
+          enum: [standard, premium, enterprise]
+          description: Customer tier level
+        specialRequirements:
+          type: array
+          items:
+            type: string
+          description: Additional special requirements
+
+    GeoLocation:
+      type: object
+      required:
+        - latitude
+        - longitude
+        - address
+        - city
+        - state
+        - zipCode
+        - serviceRegion
+      properties:
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        address:
+          type: string
+          maxLength: 200
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          minLength: 2
+          maxLength: 2
+        zipCode:
+          type: string
+          pattern: '^\d{5}(-\d{4})?$'
+        serviceRegion:
+          type: string
+          maxLength: 50
+
+    RecommendationResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        jobId:
+          type: string
+          format: uuid
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorRecommendation'
+          minItems: 0
+          maxItems: 5
+        generatedAt:
+          type: string
+          format: date-time
+        modelVersion:
+          type: string
+        overallConfidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        automationLevel:
+          type: string
+          enum: [auto, advisory, manual]
+        degradedMode:
+          type: boolean
+        processingTimeMs:
+          type: integer
+
+    VendorRecommendation:
+      type: object
+      properties:
+        rank:
+          type: integer
+          minimum: 1
+          maximum: 10
+        vendorId:
+          type: string
+          format: uuid
+        vendorName:
+          type: string
+        overallScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        scoreBreakdown:
+          $ref: '#/components/schemas/ScoreBreakdown'
+        rationale:
+          type: string
+          description: Human-readable explanation
+        riskFactors:
+          type: array
+          items:
+            type: string
+        estimatedResponseTime:
+          type: string
+
+    ScoreBreakdown:
+      type: object
+      properties:
+        ruleBasedScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        mlScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        factors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoreFactor'
+
+    ScoreFactor:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: number
+          minimum: 0
+          maximum: 1
+        weight:
+          type: number
+          minimum: 0
+          maximum: 1
+        contribution:
+          type: number
+          minimum: 0
+          maximum: 1
+        explanation:
+          type: string
+
+    OverrideRequest:
+      type: object
+      required:
+        - jobId
+        - originalVendorId
+        - selectedVendorId
+        - overrideReason
+        - overrideCategory
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        originalVendorId:
+          type: string
+          format: uuid
+        selectedVendorId:
+          type: string
+          format: uuid
+        overrideReason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Required reason for the override
+        overrideCategory:
+          type: string
+          enum: [preference, availability, relationship, other]
+
+    OverrideResponse:
+      type: object
+      properties:
+        overrideId:
+          type: string
+          format: uuid
+        jobId:
+          type: string
+          format: uuid
+        originalVendorId:
+          type: string
+          format: uuid
+        selectedVendorId:
+          type: string
+          format: uuid
+        operatorId:
+          type: string
+          format: uuid
+        overrideReason:
+          type: string
+        overrideCategory:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+
+    OverrideHistoryResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        overrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/OverrideResponse'
+        correlationId:
+          type: string
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        dependencies:
+          type: object
+          additionalProperties:
+            type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        correlationId:
+          type: string
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: ValidationError
+        message:
+          type: string
+        correlationId:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+    ForbiddenError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Forbidden
+        message:
+          type: string
+        requiredRole:
+          type: string
+        userRoles:
+          type: array
+          items:
+            type: string
+        correlationId:
+          type: string
+
+    RateLimitError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: RateLimited
+        message:
+          type: string
+        retryAfter:
+          type: integer
+          description: Seconds to wait before retrying
+        correlationId:
+          type: string
