@@ -17,3 +17,6 @@ export * from './ml/index.js';
 
 // Export hybrid scoring components
 export * from './scoring/index.js';
+
+// Export human-in-the-loop controls
+export * from './controls/index.js';
