@@ -6,6 +6,7 @@
  *
  * @requirement 7.1, 7.2, 7.3 - Canonical data model definitions
  * @requirement 10.1, 10.2, 10.4, 11.4 - Logging and metrics
+ * @requirement 6.4, 6.5 - Audit trail
  */
 
 // Job models and schemas
@@ -28,3 +29,6 @@ export * from './logging/logger.js';
 
 // Metrics
 export * from './metrics/metrics-collector.js';
+
+// Audit trail
+export * from './audit/audit-logger.js';
