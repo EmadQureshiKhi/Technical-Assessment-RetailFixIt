@@ -568,3 +568,33 @@ export class InMemoryTelemetryClient implements TelemetryClient {
     this.dependencies = [];
   }
 }
+
+
+/**
+ * Global logger instance
+ */
+let globalLogger: Logger | null = null;
+
+/**
+ * Gets the global logger instance
+ */
+export function getLogger(): Logger {
+  if (!globalLogger) {
+    globalLogger = createLogger();
+  }
+  return globalLogger;
+}
+
+/**
+ * Sets the global logger instance
+ */
+export function setLogger(logger: Logger): void {
+  globalLogger = logger;
+}
+
+/**
+ * Resets the global logger (for testing)
+ */
+export function resetLogger(): void {
+  globalLogger = null;
+}
