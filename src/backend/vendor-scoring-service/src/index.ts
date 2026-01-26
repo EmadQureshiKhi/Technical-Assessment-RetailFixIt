@@ -14,3 +14,6 @@ export * from './rules/index.js';
 
 // Export ML integration components
 export * from './ml/index.js';
+
+// Export hybrid scoring components
+export * from './scoring/index.js';
