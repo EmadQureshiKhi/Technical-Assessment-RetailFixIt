@@ -1,4 +1,13 @@
-// Vendor Scoring Service
-// Entry point for the vendor scoring Azure Function
+/**
+ * Vendor Scoring Service
+ *
+ * Entry point for the vendor scoring Azure Function.
+ * Exports all scoring components for use by other modules.
+ *
+ * @requirement 1.1 - Process job data and vendor attributes to generate ranked vendor list
+ */
 
 export const VERSION = '1.0.0';
+
+// Export rule-based scoring components
+export * from './rules/index.js';
