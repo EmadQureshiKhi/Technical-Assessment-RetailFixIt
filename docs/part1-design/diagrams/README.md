@@ -12,22 +12,21 @@ The diagram above shows the complete Azure architecture for the RetailFixIt AI-O
 
 ### Component Layers
 
-**External Layer**
+**External**
 - **Dispatch Operators**: Human users who review recommendations and can override AI decisions
 - **Event Sources**: Upstream systems (Job Portal, Vendor Portal, Dispatch System) that publish events when jobs are created or updated
 
-**Identity & Security**
-- **Azure AD**: Handles authentication for all users accessing the Admin UI and APIs
+**Security & Identity**
+- **Azure AD**: Handles authentication for all users accessing the Admin UI
 - **Key Vault**: Securely stores connection strings, API keys, and other secrets
+
+**Frontend**
+- **Static Web App**: Hosts the Admin UI where operators view recommendations and perform overrides
 
 **Event Ingestion**
 - **Event Grid**: Receives events from all sources and routes them to appropriate handlers
 - **Service Bus**: Provides reliable message queuing with guaranteed delivery
 - **Dead Letter Queue**: Captures failed messages for investigation and replay
-
-**Frontend & API Layer**
-- **Static Web App**: Hosts the Admin UI where operators view recommendations and perform overrides
-- **API Management**: Gateway that handles authentication, rate limiting, and request routing
 
 **AI Services (Azure Functions)**
 - **Event Handler**: Processes incoming events from Service Bus
@@ -40,12 +39,9 @@ The diagram above shows the complete Azure architecture for the RetailFixIt AI-O
 - **Model Artifacts**: Blob storage for trained model files and versions
 
 **Data Layer**
-- **Cosmos DB**: Low-latency storage for vendor profiles, jobs, and recommendations (partitioned by service region)
+- **Cosmos DB**: Low-latency storage for vendor profiles, jobs, and recommendations
 - **Redis Cache**: Caches frequently accessed features to reduce database load
 - **Azure SQL**: Relational storage for audit logs, historical metrics, and ML training data
-
-**ML Training Pipeline**
-- **Data Factory**: Orchestrates feature engineering and data preparation for model retraining
 
 **Observability**
 - **Application Insights**: Collects telemetry, traces, and custom metrics from all services
@@ -59,13 +55,12 @@ The diagram above shows the complete Azure architecture for the RetailFixIt AI-O
 | 🔵 Blue | Events | Event publishing and processing flow |
 | 🟣 Purple | AI/ML | Prediction requests and model deployment |
 | 🟠 Orange | Data | Database read/write operations |
-| 🟤 Brown (dashed) | Training | ML training data pipeline |
 | ⚫ Gray (dotted) | Security | Secrets retrieval from Key Vault |
 | 🔴 Red (dashed) | Monitoring | Telemetry and logging |
 
 ---
 
-## High-Level Azure Architecture (Mermaid)
+## System Overview (Mermaid)
 
 ```mermaid
 flowchart TB
@@ -414,3 +409,27 @@ Override data flows back into training:
 2. Override logged with reason to Azure SQL
 3. Data Factory includes overrides in next training batch
 4. Model learns from human expertise
+
+
+---
+
+## Future Architecture (Production-Ready)
+
+The diagram below shows the enhanced architecture with additional Azure services for a production-grade deployment.
+
+![RetailFixIt Future Architecture](retailfixit_azure_architecturenew.png)
+
+### Additional Components
+
+| Service | Purpose |
+|---------|---------|
+| **Azure CDN** | Global edge caching for Admin UI |
+| **Application Gateway (WAF)** | Web application firewall, SSL termination, DDoS protection |
+| **API Management** | Rate limiting, API versioning, developer portal |
+| **Event Hubs** | High-volume event streaming for ML pipelines |
+| **Managed Identities** | Zero-secret authentication between services |
+| **Defender for Cloud** | Security monitoring and compliance |
+| **Cognitive Services** | Text analytics, anomaly detection |
+| **Data Factory** | ETL pipelines for ML training data |
+
+See [tradeoffs-assumptions.md](../tradeoffs-assumptions.md#production-ready-enhancements) for rationale.

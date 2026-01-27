@@ -218,3 +218,22 @@ This document captures the key design decisions, tradeoffs considered, and assum
 4. **A/B testing infrastructure:** Build dedicated experimentation platform for model comparison.
 
 5. **Vendor self-service:** Portal for vendors to update profiles, reducing data staleness.
+
+
+---
+
+## Production-Ready Enhancements
+
+The following Azure services would be added for a production-grade deployment:
+
+![RetailFixIt Production Architecture](diagrams/retailfixit_azure_architecturenew.png)
+
+| Service | Purpose | Why Add It |
+|---------|---------|------------|
+| **Azure CDN** | Content delivery | Global edge caching for Admin UI, reducing latency for distributed operators |
+| **Application Gateway (WAF)** | Web application firewall | OWASP protection, SSL termination, and DDoS mitigation required for production |
+| **API Management** | API gateway | Rate limiting, API versioning, developer portal, and centralized authentication |
+| **Event Hubs** | High-volume streaming | Real-time event streaming for ML feature pipelines when volume exceeds Service Bus limits |
+| **Managed Identities** | Zero-secret auth | Eliminates credential management, automatic token rotation, Azure AD integration |
+| **Defender for Cloud** | Security monitoring | Threat detection, compliance scoring, and security recommendations |
+| **Cognitive Services** | Enhanced AI | Text analytics for override reason classification, anomaly detection |
