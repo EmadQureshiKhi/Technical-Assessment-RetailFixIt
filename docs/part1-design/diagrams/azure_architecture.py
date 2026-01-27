@@ -62,7 +62,7 @@ with Diagram(
     "RetailFixIt - AI-Orchestrated Vendor Dispatch System",
     show=False,
     direction="TB",
-    filename="retailfixit_azure_architecture",
+    filename="azure_current_architecture",
     outformat="png",
     graph_attr=graph_attr,
 ):
@@ -160,5 +160,5 @@ with Diagram(
 
 
 print("=" * 60)
-print("Diagram generated: retailfixit_azure_architecture.png")
+print("Diagram generated: azure_current_architecture.png")
 print("=" * 60)

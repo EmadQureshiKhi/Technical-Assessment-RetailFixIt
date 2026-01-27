@@ -4,7 +4,7 @@ This directory contains architecture diagrams for the RetailFixIt Vendor Dispatc
 
 ## High-Level Azure Architecture
 
-![RetailFixIt Azure Architecture](retailfixit_azure_architecture.png)
+![RetailFixIt Azure Architecture](azure_current_architecture.png)
 
 ### Architecture Overview
 
@@ -417,7 +417,7 @@ Override data flows back into training:
 
 The diagram below shows the enhanced architecture with additional Azure services for a production-grade deployment.
 
-![RetailFixIt Future Architecture](retailfixit_azure_architecturenew.png)
+![RetailFixIt Future Architecture](azure_future_architecture.png)
 
 ### Additional Components
 

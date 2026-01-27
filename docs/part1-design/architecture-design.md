@@ -7,7 +7,7 @@ The RetailFixIt Vendor Dispatch System is an AI-orchestrated solution that autom
 
 ### High-Level Architecture Diagram
 
-![RetailFixIt Azure Architecture](diagrams/retailfixit_azure_architecture.png)
+![RetailFixIt Azure Architecture](diagrams/azure_current_architecture.png)
 
 *See [diagrams/README.md](diagrams/README.md) for detailed component descriptions and connection legend.*
 

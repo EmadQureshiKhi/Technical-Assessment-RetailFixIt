@@ -226,7 +226,7 @@ This document captures the key design decisions, tradeoffs considered, and assum
 
 The following Azure services would be added for a production-grade deployment:
 
-![RetailFixIt Production Architecture](diagrams/retailfixit_azure_architecturenew.png)
+![RetailFixIt Production Architecture](diagrams/azure_future_architecture.png)
 
 | Service | Purpose | Why Add It |
 |---------|---------|------------|
