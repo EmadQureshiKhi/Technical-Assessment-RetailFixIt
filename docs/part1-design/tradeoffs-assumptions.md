@@ -164,7 +164,7 @@ This document captures the key design decisions, tradeoffs considered, and assum
 **Considered:** GraphQL for flexible querying from Admin UI.
 
 **Rejected Because:**
-- REST is simpler and well-understood by team
+- REST is simpler and well-understood
 - Query patterns are predictable (get recommendations, submit override)
 - OpenAPI tooling more mature for documentation and code generation
 
@@ -177,7 +177,7 @@ This document captures the key design decisions, tradeoffs considered, and assum
 **Rejected Because:**
 - Serverless reduces operational overhead significantly
 - Variable workload benefits from scale-to-zero
-- Team has more experience with Functions than Kubernetes
+- More experience with Functions than Kubernetes
 
 **Revisit If:** Need long-running processes, GPU compute, or consistent sub-100ms latency.
 
