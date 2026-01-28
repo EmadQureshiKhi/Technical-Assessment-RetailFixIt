@@ -1,6 +1,24 @@
+# RetailFixIt AI-Orchestrated Vendor Dispatch System
+
+An intelligent vendor dispatch system that combines deterministic business rules with machine learning predictions to recommend optimal vendors for retail service jobs. Built on Azure with a focus on explainability, human oversight, and continuous improvement.
+
+## System Overview
+
+The RetailFixIt Vendor Dispatch System automates vendor selection for service jobs using a hybrid scoring approach:
+
+- **Rule-Based Scoring (40%)**: Deterministic filters for availability, geographic proximity, certifications, and capacity
+- **ML-Based Scoring (50%)**: Gradient boosting models predict completion probability, time-to-complete, and rework risk
+- **Context Bonus (10%)**: Job-specific factors like SLA urgency and customer tier
+
+The system operates in three automation modes:
+- **Automated**: High-confidence recommendations dispatch without human intervention
+- **Advisory**: Recommendations require operator approval before dispatch
+- **Manual**: Operators select vendors without AI recommendations
+
+
 # RetailFixIt Documentation Index
 
-This directory contains comprehensive documentation for the RetailFixIt AI-Orchestrated Vendor Dispatch System, organized by assessment part.
+This contains comprehensive documentation for the RetailFixIt AI-Orchestrated Vendor Dispatch System, organized by assessment part.
 
 ---
 
