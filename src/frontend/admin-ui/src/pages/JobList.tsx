@@ -81,9 +81,9 @@ function RecommendationBadge({ status }: { status?: string }) {
   
   const colors: Record<string, string> = {
     pending: 'var(--color-gray-500)',
-    generated: 'var(--color-info)',
-    accepted: 'var(--color-success)',
-    overridden: 'var(--color-warning)',
+    generated: '#44403c',
+    accepted: '#15803d',
+    overridden: '#a16207',
   };
 
   return (
@@ -107,7 +107,7 @@ function RecommendationBadge({ status }: { status?: string }) {
         }}
         aria-hidden="true"
       />
-      {status}
+      {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 }
@@ -159,7 +159,7 @@ export function JobList() {
     <main id="main-content" role="main" aria-label="Job List">
       <div className="container" style={{ padding: 'var(--spacing-lg) var(--spacing-md)' }}>
         <div className="page-header">
-          <h1>Jobs</h1>
+          <h1>Jobs Dashboard</h1>
           <button
             className="btn btn-secondary"
             onClick={loadJobs}
