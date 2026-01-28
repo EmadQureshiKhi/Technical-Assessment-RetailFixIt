@@ -192,8 +192,9 @@ export function AuditLog() {
                           style={{
                             marginTop: 'var(--spacing-md)',
                             padding: 'var(--spacing-md)',
-                            backgroundColor: '#fff3cd',
+                            backgroundColor: 'var(--color-warm-100)',
                             borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border-color)',
                           }}
                         >
                           <div style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-xs)' }}>
