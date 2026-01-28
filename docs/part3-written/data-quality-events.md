@@ -4,7 +4,7 @@
 
 The vendor dispatch AI is only as reliable as the data flowing through it. I've identified several event categories that are essential for both real-time scoring and continuous model improvement.
 
-**Job Lifecycle Events**: `JobCreated`, `JobAssigned`, `JobStarted`, `JobCompleted`, `JobCancelled`. Each event must include timestamps, correlation IDs, and relevant context. The `JobCompleted` event is particularly critical—it must capture actual completion time, customer satisfaction rating, and whether rework was required. Without accurate outcome data, prediction accuracy cannot be measured and improved models cannot be trained.
+**Job Lifecycle Events**: `JobCreated`, `JobAssigned`, `JobStarted`, `JobCompleted`, `JobCancelled`. Each event must include timestamps, correlation IDs, and relevant context. The `JobCompleted` event is particularly critical, it must capture actual completion time, customer satisfaction rating, and whether rework was required. Without accurate outcome data, prediction accuracy cannot be measured and improved models cannot be trained.
 
 **Vendor State Events**: `VendorAvailabilityUpdated`, `VendorCapacityChanged`, `VendorCertificationExpired`. Real-time vendor state directly impacts scoring accuracy. Stale availability data leads to recommendations for vendors who can't actually take the job, eroding operator trust. The system implements aggressive cache invalidation and requires vendors to confirm availability for high-priority jobs.
 

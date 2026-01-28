@@ -89,7 +89,7 @@ Design decision analysis covering:
 Visual representations of the system:
 - Azure architecture diagram (current state)
 - Azure architecture diagram (production-ready)
-- Diagram generation instructions
+
 
 ---
 
@@ -108,22 +108,38 @@ Visual representations of the system:
 │   ├── frontend/
 │   │   └── admin-ui/               # React operator interface
 │   └── ml/
+│       ├── api/                    # Flask ML service API
 │       ├── training/               # Model training scripts
 │       ├── models/                 # Model registry
 │       ├── monitoring/             # Drift detection
-│       └── deployment/             # Blue-green deployment
+│       ├── deployment/             # Blue-green deployment
+│       ├── notebooks/              # Jupyter training notebooks
+│       └── trained_models/         # Serialized ML models (.pkl)
 ├── azure-functions/                # Deployed serverless API
+│   └── src/
+│       ├── functions/              # Azure Function endpoints
+│       └── ml/                     # ML scoring module
 ├── infrastructure/
-│   └── bicep/                      # Azure IaC templates
+│   ├── bicep/                      # Azure IaC templates
+│   │   ├── modules/                # Modular Bicep files
+│   │   └── parameters/             # Environment configs
+│   ├── docs/                       # Infrastructure documentation
+│   └── scripts/                    # Deployment scripts
 ├── tests/
 │   ├── property/                   # Property-based tests (26 properties)
 │   ├── integration/                # Integration tests
 │   ├── e2e/                        # End-to-end tests
-│   └── load/                       # Performance tests
+│   ├── load/                       # Performance tests
+│   └── security/                   # Security tests
 ├── workflow/                       # Spec-driven development docs
+│   ├── requirements.md             # User stories & acceptance criteria
+│   ├── design.md                   # System design & properties
+│   └── tasks.md                    # Implementation task list
 └── docs/
     ├── part1-design/               # Architecture documentation
+    │   └── diagrams/               # Architecture diagrams
     └── part3-written/              # Governance responses
+        └── bonus/                  # Optional bonus features
 ```
 
 ### Backend API
@@ -272,6 +288,20 @@ The REST API is documented using OpenAPI/Swagger:
 
 ---
 
+## Security Configuration
+
+Security documentation covering encryption, access control, and network security:
+- **Security Guide**: [`infrastructure/docs/security-configuration.md`](../infrastructure/docs/security-configuration.md)
+
+Key security features:
+- Encryption at rest (AES-256) for Cosmos DB, SQL, and Blob Storage
+- TLS 1.2+ for all connections
+- Azure AD authentication and RBAC
+- Key Vault for secrets management
+- Private endpoints for production environments
+
+---
+
 ## Spec-Driven Development Workflow
 
 This project was built using spec-driven development methodology. The workflow documentation shows how the system was designed step-by-step:
@@ -283,7 +313,6 @@ This project was built using spec-driven development methodology. The workflow d
 | [Tasks](../workflow/tasks.md) | Implementation plan with 23 phases |
 | [Workflow README](../workflow/README.md) | Overview of the spec-driven approach |
 
-### What is Spec-Driven Development?
 
 1. **Requirements** - Define what the system should do through user stories and acceptance criteria
 2. **Design** - Architect how the system will work, including data models, APIs, and 26 correctness properties
@@ -291,9 +320,3 @@ This project was built using spec-driven development methodology. The workflow d
 
 ---
 
-## Document Conventions
-
-- **Requirements references**: Documents reference specific requirements from the spec (e.g., "Requirements 1.1, 1.2")
-- **Property references**: Testing properties are numbered (e.g., "Property 7: Explainability Completeness")
-- **Code examples**: TypeScript for backend, Python for ML components
-- **Diagrams**: Mermaid syntax for inline diagrams, PNG exports in `diagrams/` folder

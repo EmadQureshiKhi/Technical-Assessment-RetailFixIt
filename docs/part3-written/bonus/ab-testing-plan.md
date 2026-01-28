@@ -4,11 +4,11 @@
 
 Comparing AI-recommended dispatch against manual dispatch requires careful experimental design to isolate the effect of AI recommendations while maintaining operational fairness and statistical validity.
 
-**Randomization Strategy**: Jobs are randomly assigned to treatment groups at creation time using a deterministic hash of the jobId. This ensures consistent group assignment if a job is reprocessed and prevents selection bias. The hash-based approach also enables reproducible experiments—given the same jobId, the same group assignment results. Traffic split defaults to 80/20 (AI/manual) during initial rollout, shifting toward 90/10 as confidence in AI performance grows.
+**Randomization Strategy**: Jobs are randomly assigned to treatment groups at creation time using a deterministic hash of the jobId. This ensures consistent group assignment if a job is reprocessed and prevents selection bias. The hash-based approach also enables reproducible experiments, given the same jobId, the same group assignment results. Traffic split defaults to 80/20 (AI/manual) during initial rollout, shifting toward 90/10 as confidence in AI performance grows.
 
 **Stratified Sampling**: Pure random assignment can create imbalanced groups for rare job types or customer tiers. The system implements stratified randomization, ensuring each stratum (job type × urgency level × customer tier) maintains the target split ratio. This prevents scenarios where all critical enterprise jobs happen to land in one group, skewing results.
 
-**Holdout Groups**: Beyond the primary A/B split, a small holdout group (5%) receives no AI involvement—vendors are selected purely by operator judgment without seeing AI recommendations. This establishes a true baseline and detects whether simply showing recommendations (even if overridden) influences operator behavior.
+**Holdout Groups**: Beyond the primary A/B split, a small holdout group (5%) receives no AI involvement, vendors are selected purely by operator judgment without seeing AI recommendations. This establishes a true baseline and detects whether simply showing recommendations (even if overridden) influences operator behavior.
 
 ## Success Metrics
 
@@ -41,6 +41,6 @@ Rigorous statistical analysis ensures conclusions are valid and actionable.
 
 **Heterogeneous Treatment Effects**: Aggregate results can mask important variation. Analyze treatment effects across segments: job types, customer tiers, geographic regions, time of day. AI might excel for routine repairs but underperform for complex installations. Segment analysis informs where to deploy AI and where to maintain manual processes.
 
-**Causal Inference Considerations**: Even with randomization, confounders can emerge. Monitor for differential attrition (jobs dropping out of one group more than another) and spillover effects (operators in the manual group learning from AI recommendations they see elsewhere). Use intention-to-treat analysis as the primary approach, with per-protocol analysis as sensitivity check.
+**Causal Inference Considerations**: Even with randomization, confounders can emerge. Monitor for differential attrition (jobs dropping out of one group more than another) and spillover effects (operators in the manual group learning from AI recommendations they see elsewhere). Use intention to treat analysis as the primary approach, with per-protocol analysis as sensitivity check.
 
 **Reporting and Decision Framework**: Results are reported with confidence intervals, not just point estimates. A decision framework specifies thresholds: "Deploy AI broadly if completion rate improves by >2% with 95% CI excluding zero, and no guardrail metric degrades by >1%." This prevents post-hoc rationalization and ensures decisions are made on pre-specified criteria.

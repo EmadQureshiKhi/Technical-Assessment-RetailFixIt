@@ -28,7 +28,7 @@ This document captures the key design decisions, tradeoffs considered, and assum
 - **Event-driven** adds complexity but enables loose coupling and better resilience
 
 **Why Event-Driven:**
-- Decouples job creation from scoring—upstream systems don't wait for AI
+- Decouples job creation from scoring, upstream systems don't wait for AI
 - Dead-letter queues capture failures for investigation and replay
 - Natural fit for async ML inference which can take 500ms+
 - Scales independently: scoring service auto-scales without affecting job portal
@@ -76,7 +76,7 @@ This document captures the key design decisions, tradeoffs considered, and assum
 
 **Why 70%:**
 - Based on industry benchmarks for advisory AI systems
-- Configurable per job type—can increase for high-value customers
+- Configurable per job type, can increase for high-value customers
 - Operators can still override high-confidence recommendations if needed
 
 ### 6. ML Model Complexity vs Interpretability

@@ -20,10 +20,10 @@ Latency spikes can be as disruptive as outages. A scoring request that takes 30 
 
 ## Low-Confidence Results
 
-Low confidence indicates the model is uncertain—perhaps due to sparse training data for this job type, unusual vendor combinations, or conflicting signals in the input data.
+Low confidence indicates the model is uncertain, perhaps due to sparse training data for this job type, unusual vendor combinations, or conflicting signals in the input data.
 
 **Automatic Escalation**: When overall confidence falls below the configured threshold (default 70%), the system automatically sets the automation level to advisory, requiring human approval before dispatch. The recommendation is still generated and displayed, but it cannot proceed to automatic assignment.
 
 **Transparency in Explanations**: The explainability layer specifically calls out factors contributing to low confidence. "Confidence is reduced because this vendor has only 3 completed jobs of this type" gives operators actionable context. They can proceed with the recommendation if they have additional information the model lacks, or select an alternative vendor.
 
-**Abstention Option**: For extremely low confidence (below 40%), the system can be configured to abstain entirely—presenting the job for fully manual vendor selection rather than offering a potentially misleading recommendation. This prevents operators from anchoring on a recommendation the model has little basis for making.
+**Abstention Option**: For extremely low confidence (below 40%), the system can be configured to abstain entirely, presenting the job for fully manual vendor selection rather than offering a potentially misleading recommendation. This prevents operators from anchoring on a recommendation the model has little basis for making.

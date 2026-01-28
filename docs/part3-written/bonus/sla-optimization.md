@@ -22,13 +22,13 @@ The system implements a multi-factor approach to SLA optimization that balances 
 
 SLA optimization involves inherent tensions between competing objectives.
 
-**Speed vs Quality**: Prioritizing fast responders may mean selecting vendors with lower quality scores. For critical SLAs, this tradeoff is acceptable—getting someone on-site quickly matters more than marginal quality differences. For low-urgency jobs, the system reverses this priority, favoring quality over speed.
+**Speed vs Quality**: Prioritizing fast responders may mean selecting vendors with lower quality scores. For critical SLAs, this tradeoff is acceptable, getting someone on-site quickly matters more than marginal quality differences. For low-urgency jobs, the system reverses this priority, favoring quality over speed.
 
 **Cost Implications**: Vendors with faster response times often command premium pricing. The current system doesn't directly factor cost, meaning SLA optimization may systematically select more expensive vendors for urgent jobs. Future iterations could incorporate cost as a factor, accepting slightly longer response times when the cost differential is significant and the SLA allows it.
 
 **Vendor Fairness**: Aggressive SLA optimization can create a "rich get richer" dynamic where fast-responding vendors receive more urgent (often higher-value) jobs, while slower vendors are relegated to low-urgency work. The fairness mechanisms described elsewhere help mitigate this, but tension remains between SLA optimization and equitable opportunity distribution.
 
-**Prediction Uncertainty**: Estimated response times are based on historical averages, but actual response times vary. A vendor averaging 2 hours might take 4 hours on a particular day due to traffic, weather, or other factors. The system addresses this by requiring a margin of safety—vendors must have estimated times well under the SLA limit, not just barely meeting it.
+**Prediction Uncertainty**: Estimated response times are based on historical averages, but actual response times vary. A vendor averaging 2 hours might take 4 hours on a particular day due to traffic, weather, or other factors. The system addresses this by requiring a margin of safety, vendors must have estimated times well under the SLA limit, not just barely meeting it.
 
 **New Vendor Disadvantage**: Vendors without historical data receive neutral response time scores, which may disadvantage them for urgent jobs even if they could respond quickly. The onboarding period and exploration mechanisms help, but new vendors will generally not be selected for critical SLAs until they've built a track record.
 

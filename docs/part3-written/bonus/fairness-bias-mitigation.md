@@ -18,9 +18,9 @@ AI-driven vendor dispatch systems can inadvertently perpetuate or amplify biases
 
 Detecting bias requires ongoing monitoring across multiple dimensions, not just aggregate performance metrics.
 
-**Opportunity Distribution Analysis**: Track job assignment rates across vendor segments—by company size, geographic region, time on platform, and any available demographic dimensions. Statistical tests (chi-square, proportion tests) identify whether certain groups receive significantly fewer opportunities than expected given their availability and qualifications.
+**Opportunity Distribution Analysis**: Track job assignment rates across vendor segments, by company size, geographic region, time on platform, and any available demographic dimensions. Statistical tests (chi-square, proportion tests) identify whether certain groups receive significantly fewer opportunities than expected given their availability and qualifications.
 
-**Outcome Parity Monitoring**: Compare completion rates, customer satisfaction, and rework rates across vendor segments. If the model is fair, vendors with similar qualifications should achieve similar outcomes regardless of segment membership. Significant disparities warrant investigation—they may indicate the model is routing easier jobs to favored vendors.
+**Outcome Parity Monitoring**: Compare completion rates, customer satisfaction, and rework rates across vendor segments. If the model is fair, vendors with similar qualifications should achieve similar outcomes regardless of segment membership. Significant disparities warrant investigation, they may indicate the model is routing easier jobs to favored vendors.
 
 **Score Distribution Analysis**: Examine the distribution of AI scores across vendor segments. A fair model should produce similar score distributions for similarly qualified vendors. Bimodal distributions or systematic score gaps between segments suggest the model has learned biased patterns.
 
@@ -44,4 +44,4 @@ Ensuring all qualified vendors receive fair opportunity requires active interven
 
 **Feedback-Weighted Retraining**: When incorporating override data into model retraining, weight feedback to prevent amplification of existing biases. Overrides that increase diversity (selecting a vendor from an underrepresented segment) receive higher weight than overrides that reinforce existing patterns.
 
-**Regular Fairness Audits**: Conduct quarterly fairness audits examining all metrics above. Audits should involve stakeholders beyond the ML team—operations, vendor relations, and potentially external reviewers—to ensure diverse perspectives on what constitutes fair treatment.
+**Regular Fairness Audits**: Conduct quarterly fairness audits examining all metrics above. Audits should involve stakeholders beyond the ML team—operations, vendor relations, and potentially external reviewers. to ensure diverse perspectives on what constitutes fair treatment.

@@ -1,3 +1,34 @@
+/**
+ * Azure Functions API for RetailFixIt Vendor Dispatch System
+ * 
+ * This module provides all REST API endpoints for the AI-orchestrated vendor
+ * dispatch system, including:
+ * - Job listing and retrieval
+ * - AI-powered vendor recommendations with hybrid scoring
+ * - Human-in-the-loop accept/override functionality
+ * - Audit logging for all decisions
+ * 
+ * The hybrid scoring formula combines:
+ * - Rule-based scoring (40%): Skill matching, availability, location
+ * - ML-based scoring (50%): Pre-computed predictions from trained models
+ * - Context scoring (10%): Job-specific factors
+ * 
+ * ML predictions are derived from trained GradientBoosting models:
+ * - Completion Model: 83.2% accuracy
+ * - Time Model: R²=0.776
+ * - Rework Model: 85.3% accuracy
+ * 
+ * @requirement 1.1 - Vendor Scoring Service with ranked recommendations
+ * @requirement 2.1 - Explainability Layer with human-readable explanations
+ * @requirement 3.1 - Event Integration for job and recommendation events
+ * @requirement 6.1 - Human-in-the-loop override capability
+ * @requirement 8.1 - ML model integration for vendor scoring
+ * @requirement 10.1 - Comprehensive logging of inputs, outputs, and decisions
+ * 
+ * @see src/ml/trained_models/ for the trained model files
+ * @see workflow/design.md for the complete system design
+ */
+
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { v4 as uuidv4 } from "uuid";
 
