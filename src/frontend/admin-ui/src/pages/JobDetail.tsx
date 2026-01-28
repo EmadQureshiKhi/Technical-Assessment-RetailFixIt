@@ -17,6 +17,7 @@ import type { Job, RecommendationResponse, VendorRecommendation } from '../types
 import { fetchJob, generateRecommendations, acceptRecommendation } from '../services/api';
 import { OverrideModal } from '../components/OverrideModal';
 import { ToastContainer, useToast } from '../components/Toast';
+import { CollapsibleRadarChart } from '../components/RadarChart';
 
 /**
  * Tooltip component for help text
@@ -99,6 +100,101 @@ function formatDate(dateString: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+/**
+ * 7-Factor Radar Chart - Uses ALL factors from API scoreBreakdown
+ * Order matches API: certification_match, proximity, rating, completion_rate, 
+ * available_capacity, response_time, quality_(low_rework)
+ */
+
+// Factor name patterns to match API factor names (sorted by weight)
+const FACTOR_PATTERNS = [
+  'certification',  // certification_match (25%)
+  'rating',         // rating (20%)
+  'proximity',      // proximity (15%)
+  'completion',     // completion_rate (15%)
+  'capacity',       // available_capacity (10%)
+  'response',       // response_time (10%)
+  'quality',        // quality_(low_rework) (5%)
+];
+
+/**
+ * Extract all 7 factor values from vendor scoreBreakdown
+ */
+function extractAllFactorValues(vendor: VendorRecommendation): number[] {
+  const factors = vendor.scoreBreakdown.factors;
+  
+  return FACTOR_PATTERNS.map(pattern => {
+    const factor = factors.find(f => 
+      f.name.toLowerCase().includes(pattern.toLowerCase())
+    );
+    return factor?.value ?? 0;
+  });
+}
+
+/**
+ * Extract all 7 factor weights from vendor scoreBreakdown
+ */
+function extractAllFactorWeights(vendor: VendorRecommendation): number[] {
+  const factors = vendor.scoreBreakdown.factors;
+  
+  return FACTOR_PATTERNS.map(pattern => {
+    const factor = factors.find(f => 
+      f.name.toLowerCase().includes(pattern.toLowerCase())
+    );
+    return factor?.weight ?? 0;
+  });
+}
+
+/**
+ * Calculate job requirements for radar chart (gray polygon)
+ * Based on job urgency, certifications, and other factors
+ */
+function calculateJobRequirements(job: Job): number[] {
+  // Base requirements vary by urgency level
+  const urgencyMultiplier = {
+    critical: 1.0,
+    high: 0.9,
+    medium: 0.75,
+    low: 0.6,
+  }[job.urgencyLevel] || 0.75;
+
+  // Certification requirement based on whether job has required certs
+  const certRequirement = job.requiredCertifications.length > 0 ? 1.0 : 0.5;
+  
+  // Proximity requirement based on urgency (urgent jobs need closer vendors)
+  const proximityRequirement = job.urgencyLevel === 'critical' ? 0.95 : 
+                               job.urgencyLevel === 'high' ? 0.85 : 0.7;
+  
+  // Rating requirement based on customer tier
+  const ratingRequirement = job.customerDetails.tier === 'premium' ? 0.9 :
+                            job.customerDetails.tier === 'enterprise' ? 0.95 : 0.75;
+  
+  // Completion rate requirement
+  const completionRequirement = urgencyMultiplier * 0.95;
+  
+  // Capacity requirement
+  const capacityRequirement = job.urgencyLevel === 'critical' ? 0.8 : 0.6;
+  
+  // Response time requirement based on urgency
+  const responseRequirement = job.urgencyLevel === 'critical' ? 1.0 :
+                              job.urgencyLevel === 'high' ? 0.85 : 0.65;
+  
+  // Quality requirement
+  const qualityRequirement = job.customerDetails.tier === 'premium' ? 0.95 :
+                             job.customerDetails.tier === 'enterprise' ? 0.98 : 0.85;
+
+  // Order must match FACTOR_PATTERNS: Certification, Rating, Proximity, Completion, Capacity, Response, Quality
+  return [
+    certRequirement,      // Certification (25%)
+    ratingRequirement,    // Rating (20%)
+    proximityRequirement, // Proximity (15%)
+    completionRequirement,// Completion (15%)
+    capacityRequirement,  // Capacity (10%)
+    responseRequirement,  // Response (10%)
+    qualityRequirement,   // Quality (5%)
+  ];
 }
 
 /**
@@ -325,6 +421,7 @@ function MLModelInfoPanel({ modelInfo, modelVersion, automationLevel }: {
  */
 function VendorCard({
   vendor,
+  jobRequirements,
   isTopRecommendation,
   onAccept,
   onOverride,
@@ -333,6 +430,7 @@ function VendorCard({
   isSelectingOverride,
 }: {
   vendor: VendorRecommendation;
+  jobRequirements: number[];
   isTopRecommendation: boolean;
   onAccept: () => void;
   onOverride: () => void;
@@ -490,6 +588,14 @@ function VendorCard({
             <ScoreBreakdown vendor={vendor} />
           </div>
         )}
+
+        {/* Radar Chart - 7 factors from Score Breakdown */}
+        <CollapsibleRadarChart
+          title="Vendor Match"
+          vendorCapabilities={extractAllFactorValues(vendor)}
+          jobRequirements={jobRequirements}
+          weights={extractAllFactorWeights(vendor)}
+        />
 
         {/* Actions */}
         {!isJobAssigned && (
@@ -890,6 +996,7 @@ export function JobDetail() {
                   <VendorCard
                     key={vendor.vendorId}
                     vendor={vendor}
+                    jobRequirements={calculateJobRequirements(job)}
                     isTopRecommendation={index === 0}
                     onAccept={() => handleAccept(vendor.vendorId)}
                     onOverride={() => handleOverrideClick(vendor)}
