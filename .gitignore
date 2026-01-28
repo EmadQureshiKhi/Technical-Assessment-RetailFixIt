@@ -49,3 +49,13 @@ local.settings.json
 # Azure Functions build artifacts
 azure-functions/dist/
 azure-functions/node_modules/
+
+# Secrets and credentials (extra safety)
+*.pem
+*.key
+*.pfx
+*.p12
+secrets.json
+credentials.json
+**/secrets/
+.secrets
