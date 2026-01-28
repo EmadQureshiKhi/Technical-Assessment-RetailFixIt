@@ -23,8 +23,9 @@ param keyVaultId string
 param appInsightsId string
 
 // Storage account for ML workspace
+// Storage account name must be 3-24 chars, lowercase letters and numbers only
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: replace('${name}storage', '-', '')
+  name: toLower(replace(replace('${name}storage', '-', ''), '_', ''))
   location: location
   tags: tags
   sku: {
@@ -49,8 +50,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 }
 
 // Container registry for ML models
+// Container registry name must be 5-50 chars, alphanumeric only
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
-  name: replace('${name}acr', '-', '')
+  name: toLower(replace(replace('${name}acr', '-', ''), '_', ''))
   location: location
   tags: tags
   sku: {
@@ -81,6 +83,7 @@ resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2023-10-01' =
 }
 
 // Compute cluster for training
+// Requires vCPU quota for Standard DSv2 family
 resource computeCluster 'Microsoft.MachineLearningServices/workspaces/computes@2023-10-01' = {
   parent: mlWorkspace
   name: 'training-cluster'
@@ -92,7 +95,7 @@ resource computeCluster 'Microsoft.MachineLearningServices/workspaces/computes@2
       vmPriority: 'Dedicated'
       scaleSettings: {
         minNodeCount: 0
-        maxNodeCount: 4
+        maxNodeCount: 2
         nodeIdleTimeBeforeScaleDown: 'PT5M'
       }
     }

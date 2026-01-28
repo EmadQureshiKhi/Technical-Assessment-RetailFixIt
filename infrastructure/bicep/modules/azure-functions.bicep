@@ -32,8 +32,9 @@ param cosmosDbEndpoint string
 param serviceBusNamespace string
 
 // Storage account for Functions
+// Storage account name must be 3-24 chars, lowercase letters and numbers only
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: replace('${name}storage', '-', '')
+  name: toLower(replace(replace('${name}st', '-', ''), '_', ''))
   location: location
   tags: tags
   sku: {

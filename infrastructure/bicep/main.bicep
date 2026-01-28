@@ -44,7 +44,7 @@ var skuConfig = {
     functionPlan: 'Y1'
     cosmosDb: 'Serverless'
     sql: 'Basic'
-    serviceBus: 'Basic'
+    serviceBus: 'Standard'
     redis: 'Basic'
     appInsights: 'PerGB2018'
   }
@@ -73,13 +73,14 @@ var currentSku = skuConfig[environment]
 // ============================================================================
 
 // Key Vault - Deploy first for secrets management
+// Key Vault name must be 3-24 chars, alphanumeric only
 module keyVault 'modules/key-vault.bicep' = {
   name: 'keyVault-deployment'
   params: {
-    name: '${resourcePrefix}-kv-${uniqueSuffix}'
+    name: 'rfixit${environment}kv${substring(uniqueSuffix, 0, 6)}'
     location: location
     tags: tags
-    enableSoftDelete: environment == 'production'
+    enableSoftDelete: true  // Always enable - can't be disabled once enabled
     enablePurgeProtection: environment == 'production'
   }
 }

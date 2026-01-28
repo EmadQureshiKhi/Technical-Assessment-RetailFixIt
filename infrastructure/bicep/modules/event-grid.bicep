@@ -29,9 +29,10 @@ resource eventGridTopic 'Microsoft.EventGrid/topics@2023-12-15-preview' = {
 }
 
 // System topic for Azure resource events (optional, for monitoring)
+// Note: System topic location must match the source resource location
 resource systemTopic 'Microsoft.EventGrid/systemTopics@2023-12-15-preview' = {
   name: '${name}-system'
-  location: location
+  location: 'global'  // Resource group events require global location
   tags: tags
   properties: {
     source: resourceGroup().id
