@@ -1,0 +1,22 @@
+{
+  "name": "retailfixit-azure-functions",
+  "version": "1.0.0",
+  "description": "Azure Functions for RetailFixIt Vendor Dispatch System",
+  "main": "dist/src/functions/*.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "func start",
+    "deploy": "func azure functionapp publish retailfixit-dev-func"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "express": "^4.18.2",
+    "zod": "^3.22.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.0"
+  }
+}
