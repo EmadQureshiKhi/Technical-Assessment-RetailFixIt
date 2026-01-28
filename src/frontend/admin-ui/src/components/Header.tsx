@@ -19,11 +19,11 @@ export function Header() {
       role="banner"
       style={{
         backgroundColor: 'var(--color-white)',
-        borderBottom: '1px solid var(--color-gray-200)',
-        padding: 'var(--spacing-md) 0',
+        borderBottom: '1px solid var(--border-color)',
+        padding: '0',
       }}
     >
-      <div className="container">
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px' }}>
         <nav
           role="navigation"
           aria-label="Main navigation"
@@ -31,25 +31,29 @@ export function Header() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            height: '64px',
           }}
         >
           <Link
             to="/"
             style={{
-              fontSize: 'var(--font-size-xl)',
+              fontSize: 'var(--font-size-lg)',
               fontWeight: 700,
-              color: 'var(--color-primary)',
+              color: 'var(--color-gray-900)',
               textDecoration: 'none',
+              letterSpacing: '-0.025em',
+              marginLeft: '-8px',
+              padding: '8px',
             }}
             aria-label="RetailFixIt Admin - Home"
           >
-            RetailFixIt Admin
+            RetailFixIt
           </Link>
 
           <ul
             style={{
               display: 'flex',
-              gap: 'var(--spacing-lg)',
+              gap: 'var(--spacing-xs)',
               listStyle: 'none',
               margin: 0,
               padding: 0,
@@ -59,26 +63,52 @@ export function Header() {
               <Link
                 to="/"
                 style={{
-                  color: isActive('/') ? 'var(--color-primary)' : 'var(--color-gray-700)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  color: isActive('/') ? 'var(--color-gray-900)' : 'var(--color-gray-600)',
                   textDecoration: 'none',
-                  fontWeight: isActive('/') ? 600 : 400,
-                  padding: 'var(--spacing-sm)',
-                  borderBottom: isActive('/') ? '2px solid var(--color-primary)' : 'none',
+                  fontWeight: 500,
+                  fontSize: 'var(--font-size-sm)',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: isActive('/') ? 'var(--color-warm-200)' : 'transparent',
+                  transition: 'all var(--transition-fast)',
                 }}
                 aria-current={isActive('/') ? 'page' : undefined}
               >
                 Jobs
               </Link>
             </li>
+            <li
+              aria-hidden="true"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 4px',
+              }}
+            >
+              <span
+                style={{
+                  width: '1px',
+                  height: '20px',
+                  backgroundColor: 'var(--color-gray-300)',
+                }}
+              />
+            </li>
             <li>
               <Link
                 to="/audit"
                 style={{
-                  color: isActive('/audit') ? 'var(--color-primary)' : 'var(--color-gray-700)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  color: isActive('/audit') ? 'var(--color-gray-900)' : 'var(--color-gray-600)',
                   textDecoration: 'none',
-                  fontWeight: isActive('/audit') ? 600 : 400,
-                  padding: 'var(--spacing-sm)',
-                  borderBottom: isActive('/audit') ? '2px solid var(--color-primary)' : 'none',
+                  fontWeight: 500,
+                  fontSize: 'var(--font-size-sm)',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: isActive('/audit') ? 'var(--color-warm-200)' : 'transparent',
+                  transition: 'all var(--transition-fast)',
                 }}
                 aria-current={isActive('/audit') ? 'page' : undefined}
               >
