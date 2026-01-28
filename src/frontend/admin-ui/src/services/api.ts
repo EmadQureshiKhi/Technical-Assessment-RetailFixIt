@@ -15,7 +15,8 @@ import type {
   ApiError,
   JobFilters,
   JobSortOptions,
-} from '../types';
+  UrgencyLevel,
+} from '../types/index.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
@@ -48,9 +49,9 @@ async function apiRequest<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...options.headers as Record<string, string>,
   };
 
   const response = await fetch(url, {
@@ -61,7 +62,7 @@ async function apiRequest<T>(
   if (!response.ok) {
     let errorDetails: ApiError | undefined;
     try {
-      errorDetails = await response.json();
+      errorDetails = await response.json() as ApiError;
     } catch {
       // Response body is not JSON
     }
@@ -72,7 +73,7 @@ async function apiRequest<T>(
     );
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 /**
@@ -230,7 +231,7 @@ export async function fetchJobs(
 
   // Apply sorting
   if (sort) {
-    const urgencyOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+    const urgencyOrder: Record<UrgencyLevel, number> = { critical: 0, high: 1, medium: 2, low: 3 };
     jobs.sort((a, b) => {
       let comparison = 0;
       switch (sort.field) {
@@ -241,7 +242,7 @@ export async function fetchJobs(
           comparison = new Date(a.slaDeadline).getTime() - new Date(b.slaDeadline).getTime();
           break;
         case 'urgencyLevel':
-          comparison = urgencyOrder[a.urgencyLevel] - urgencyOrder[b.urgencyLevel];
+          comparison = urgencyOrder[a.urgencyLevel as UrgencyLevel] - urgencyOrder[b.urgencyLevel as UrgencyLevel];
           break;
         case 'status':
           comparison = a.status.localeCompare(b.status);
@@ -484,17 +485,18 @@ export async function submitOverride(
  */
 export async function acceptRecommendation(
   jobId: string,
-  vendorId: string
+  vendorId: string,
+  vendorName?: string
 ): Promise<void> {
   // In production, call the real API
   if (!USE_MOCK_DATA) {
     await apiRequest<void>(`/jobs/${jobId}/accept`, {
       method: 'POST',
-      body: JSON.stringify({ vendorId }),
+      body: JSON.stringify({ vendorId, vendorName }),
     });
     return;
   }
   
   // Mock for development/testing
-  console.log(`[MOCK] Accepting vendor ${vendorId} for job ${jobId}`);
+  console.log(`[MOCK] Accepting vendor ${vendorId} (${vendorName}) for job ${jobId}`);
 }

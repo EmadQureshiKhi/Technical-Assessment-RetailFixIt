@@ -79,6 +79,29 @@ export interface ScoreBreakdown {
 }
 
 /**
+ * ML Model Predictions from trained GradientBoosting models
+ * @requirement 8.1 - ML model integration
+ */
+export interface MLPredictions {
+  completionProbability: number;
+  estimatedTimeHours: number;
+  reworkProbability: number;
+}
+
+/**
+ * ML Model Info with accuracy metrics
+ * @requirement 8.1 - ML model integration
+ */
+export interface MLModelInfo {
+  version: string;
+  completionModel: { accuracy: number; f1Score: number };
+  timeModel: { r2Score: number; mae: number };
+  reworkModel: { accuracy: number; f1Score: number };
+  trainedAt: string;
+  algorithm: string;
+}
+
+/**
  * Vendor recommendation
  * @requirement 5.2 - Display recommended vendors and rationale
  */
@@ -89,6 +112,7 @@ export interface VendorRecommendation {
   overallScore: number;
   confidence: number;
   scoreBreakdown: ScoreBreakdown;
+  mlPredictions?: MLPredictions;
   rationale: string;
   riskFactors: string[];
   estimatedResponseTime: string;
@@ -108,6 +132,7 @@ export interface RecommendationResponse {
   automationLevel: AutomationLevel;
   degradedMode: boolean;
   processingTimeMs: number;
+  mlModelInfo?: MLModelInfo;
 }
 
 /**
@@ -118,7 +143,9 @@ export interface RecommendationResponse {
 export interface OverrideRequest {
   jobId: string;
   originalVendorId: string;
+  originalVendorName?: string;
   selectedVendorId: string;
+  selectedVendorName?: string;
   overrideReason: string;
   overrideCategory: OverrideCategory;
 }
