@@ -116,7 +116,9 @@ export function OverrideModal({
       await submitOverride({
         jobId,
         originalVendorId: originalVendor.vendorId,
+        originalVendorName: originalVendor.vendorName,
         selectedVendorId: selectedVendor.vendorId,
+        selectedVendorName: selectedVendor.vendorName,
         overrideReason: reason.trim(),
         overrideCategory: category,
       });

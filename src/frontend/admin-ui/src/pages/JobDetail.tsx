@@ -106,6 +106,151 @@ function ScoreBreakdown({ vendor }: { vendor: VendorRecommendation }) {
 }
 
 /**
+ * ML Predictions component - displays predictions from trained models
+ */
+function MLPredictions({ vendor }: { vendor: VendorRecommendation }) {
+  const predictions = vendor.mlPredictions;
+  if (!predictions) return null;
+
+  return (
+    <div
+      style={{
+        marginTop: 'var(--spacing-md)',
+        padding: 'var(--spacing-md)',
+        backgroundColor: '#e8f4fd',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid #b8daff',
+      }}
+    >
+      <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-sm)', color: '#004085' }}>
+        🤖 ML Model Predictions
+      </h4>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 'var(--spacing-md)',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: '#004085', marginBottom: '4px' }}>
+            Completion Probability
+          </div>
+          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: predictions.completionProbability >= 0.95 ? '#28a745' : predictions.completionProbability >= 0.85 ? '#ffc107' : '#dc3545' }}>
+            {(predictions.completionProbability * 100).toFixed(1)}%
+          </div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: '#004085', marginBottom: '4px' }}>
+            Estimated Time
+          </div>
+          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: '#17a2b8' }}>
+            {predictions.estimatedTimeHours.toFixed(1)} hrs
+          </div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: '#004085', marginBottom: '4px' }}>
+            Rework Risk
+          </div>
+          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: predictions.reworkProbability <= 0.05 ? '#28a745' : predictions.reworkProbability <= 0.10 ? '#ffc107' : '#dc3545' }}>
+            {(predictions.reworkProbability * 100).toFixed(1)}%
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ML Model Info Panel - displays model version and accuracy metrics
+ */
+function MLModelInfoPanel({ modelInfo, modelVersion, automationLevel }: { 
+  modelInfo?: { 
+    version: string; 
+    completionModel: { accuracy: number; f1Score: number };
+    timeModel: { r2Score: number; mae: number };
+    reworkModel: { accuracy: number; f1Score: number };
+    trainedAt: string;
+    algorithm: string;
+  };
+  modelVersion: string;
+  automationLevel: string;
+}) {
+  if (!modelInfo) return null;
+
+  return (
+    <div
+      style={{
+        marginBottom: 'var(--spacing-lg)',
+        padding: 'var(--spacing-md)',
+        backgroundColor: '#f0f7ff',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid #b8daff',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-sm)' }}>
+        <h3 style={{ margin: 0, fontSize: 'var(--font-size-md)', color: '#004085' }}>
+          🤖 ML Model Info
+        </h3>
+        <span
+          style={{
+            padding: '4px 12px',
+            borderRadius: '12px',
+            fontSize: 'var(--font-size-xs)',
+            fontWeight: 600,
+            backgroundColor: automationLevel === 'auto' ? '#28a745' : '#ffc107',
+            color: automationLevel === 'auto' ? 'white' : '#212529',
+          }}
+        >
+          {automationLevel === 'auto' ? '✓ AUTO MODE' : '⚠ ADVISORY MODE'}
+        </span>
+      </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 'var(--spacing-md)',
+          fontSize: 'var(--font-size-sm)',
+        }}
+      >
+        <div>
+          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Version</div>
+          <div style={{ fontWeight: 600, fontFamily: 'monospace' }}>{modelVersion}</div>
+        </div>
+        <div>
+          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Algorithm</div>
+          <div style={{ fontWeight: 600 }}>{modelInfo.algorithm}</div>
+        </div>
+        <div>
+          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Completion Model</div>
+          <div style={{ fontWeight: 600 }}>
+            {(modelInfo.completionModel.accuracy * 100).toFixed(1)}% accuracy
+          </div>
+        </div>
+        <div>
+          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Time Model</div>
+          <div style={{ fontWeight: 600 }}>
+            R² = {modelInfo.timeModel.r2Score.toFixed(2)}
+          </div>
+        </div>
+        <div>
+          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Rework Model</div>
+          <div style={{ fontWeight: 600 }}>
+            {(modelInfo.reworkModel.accuracy * 100).toFixed(1)}% accuracy
+          </div>
+        </div>
+        <div>
+          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Trained</div>
+          <div style={{ fontWeight: 600 }}>
+            {new Date(modelInfo.trainedAt).toLocaleDateString()}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Vendor card component
  */
 function VendorCard({
@@ -113,22 +258,40 @@ function VendorCard({
   isTopRecommendation,
   onAccept,
   onOverride,
+  isAssigned,
+  isJobAssigned,
+  isSelectingOverride,
 }: {
   vendor: VendorRecommendation;
   isTopRecommendation: boolean;
   onAccept: () => void;
   onOverride: () => void;
+  isAssigned?: boolean;
+  isJobAssigned?: boolean;
+  isSelectingOverride?: boolean;
 }) {
   const [expanded, setExpanded] = useState(isTopRecommendation);
+
+  // In override selection mode, dim the top recommendation
+  const isDimmed = isSelectingOverride && isTopRecommendation;
+  // Highlight alternative vendors in override selection mode
+  const isHighlighted = isSelectingOverride && !isTopRecommendation;
 
   return (
     <article
       className="card"
       style={{
         marginBottom: 'var(--spacing-md)',
-        border: isTopRecommendation ? '2px solid var(--color-primary)' : undefined,
+        border: isAssigned 
+          ? '2px solid var(--color-success)' 
+          : isHighlighted
+            ? '2px solid var(--color-warning)'
+            : isTopRecommendation 
+              ? '2px solid var(--color-primary)' 
+              : undefined,
+        opacity: (isJobAssigned && !isAssigned) || isDimmed ? 0.5 : 1,
       }}
-      aria-label={`Vendor recommendation: ${vendor.vendorName}, rank ${vendor.rank}`}
+      aria-label={`Vendor recommendation: ${vendor.vendorName}, rank ${vendor.rank}${isAssigned ? ' - Assigned' : ''}`}
     >
       <div className="card-body">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -142,19 +305,31 @@ function VendorCard({
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
-                  backgroundColor: isTopRecommendation ? 'var(--color-primary)' : 'var(--color-gray-300)',
-                  color: isTopRecommendation ? 'var(--color-white)' : 'var(--color-gray-700)',
+                  backgroundColor: isAssigned 
+                    ? 'var(--color-success)' 
+                    : isTopRecommendation 
+                      ? 'var(--color-primary)' 
+                      : 'var(--color-gray-300)',
+                  color: isAssigned || isTopRecommendation ? 'var(--color-white)' : 'var(--color-gray-700)',
                   fontWeight: 600,
                   fontSize: 'var(--font-size-sm)',
                 }}
                 aria-hidden="true"
               >
-                {vendor.rank}
+                {isAssigned ? '✓' : vendor.rank}
               </span>
               <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
                 {vendor.vendorName}
               </h3>
-              {isTopRecommendation && (
+              {isAssigned && (
+                <span
+                  className="badge"
+                  style={{ backgroundColor: 'var(--color-success)', color: 'var(--color-white)' }}
+                >
+                  Assigned
+                </span>
+              )}
+              {!isAssigned && isTopRecommendation && !isJobAssigned && (
                 <span
                   className="badge"
                   style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-white)' }}
@@ -195,6 +370,9 @@ function VendorCard({
             {vendor.rationale}
           </p>
         </div>
+
+        {/* ML Predictions */}
+        <MLPredictions vendor={vendor} />
 
         {/* Risk factors */}
         {vendor.riskFactors.length > 0 && (
@@ -244,41 +422,63 @@ function VendorCard({
         )}
 
         {/* Actions */}
-        <div
-          style={{
-            marginTop: 'var(--spacing-lg)',
-            display: 'flex',
-            gap: 'var(--spacing-sm)',
-            justifyContent: 'flex-end',
-          }}
-        >
-          {isTopRecommendation ? (
-            <>
-              <button
-                className="btn btn-secondary"
-                onClick={onOverride}
-                aria-label={`Override recommendation and select a different vendor`}
-              >
-                Override
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={onAccept}
-                aria-label={`Accept ${vendor.vendorName} as the assigned vendor`}
-              >
-                Accept Recommendation
-              </button>
-            </>
-          ) : (
-            <button
-              className="btn btn-secondary"
-              onClick={onOverride}
-              aria-label={`Select ${vendor.vendorName} instead of the recommended vendor`}
-            >
-              Select This Vendor
-            </button>
-          )}
-        </div>
+        {!isJobAssigned && (
+          <div
+            style={{
+              marginTop: 'var(--spacing-lg)',
+              display: 'flex',
+              gap: 'var(--spacing-sm)',
+              justifyContent: 'flex-end',
+            }}
+          >
+            {isSelectingOverride ? (
+              // In override selection mode
+              isTopRecommendation ? (
+                // Hide buttons for top recommendation (it's being overridden)
+                <span style={{ color: 'var(--color-gray-500)', fontSize: 'var(--font-size-sm)' }}>
+                  Being overridden...
+                </span>
+              ) : (
+                // Show "Select This Vendor" for alternatives
+                <button
+                  className="btn btn-warning"
+                  onClick={onOverride}
+                  aria-label={`Select ${vendor.vendorName} to override the recommendation`}
+                >
+                  Select This Vendor
+                </button>
+              )
+            ) : (
+              // Normal mode
+              isTopRecommendation ? (
+                <>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={onOverride}
+                    aria-label={`Override recommendation and select a different vendor`}
+                  >
+                    Override
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={onAccept}
+                    aria-label={`Accept ${vendor.vendorName} as the assigned vendor`}
+                  >
+                    Accept Recommendation
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="btn btn-secondary"
+                  onClick={onOverride}
+                  aria-label={`Select ${vendor.vendorName} instead of the recommended vendor`}
+                >
+                  Select This Vendor
+                </button>
+              )
+            )}
+          </div>
+        )}
       </div>
     </article>
   );
@@ -292,6 +492,10 @@ export function JobDetail() {
   const [error, setError] = useState<string | null>(null);
   const [showOverrideModal, setShowOverrideModal] = useState(false);
   const [selectedVendorForOverride, setSelectedVendorForOverride] = useState<VendorRecommendation | null>(null);
+  const [acceptedVendorId, setAcceptedVendorId] = useState<string | null>(null);
+  const [overriddenVendorId, setOverriddenVendorId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSelectingOverride, setIsSelectingOverride] = useState(false); // New state for override selection mode
 
   const loadData = useCallback(async () => {
     if (!jobId) return;
@@ -306,6 +510,16 @@ export function JobDetail() {
         return;
       }
       setJob(jobData);
+
+      // Check if job is already accepted/assigned - set initial state
+      if (jobData.recommendationStatus === 'accepted' || jobData.status === 'assigned') {
+        // Job was already accepted - mark as assigned (use first vendor as placeholder)
+        setAcceptedVendorId('previously-assigned');
+        setSuccessMessage('✓ This job has already been assigned to a vendor');
+      } else if (jobData.recommendationStatus === 'overridden') {
+        setOverriddenVendorId('previously-overridden');
+        setSuccessMessage('✓ This job was assigned via override');
+      }
 
       // Try to generate recommendations
       try {
@@ -329,23 +543,53 @@ export function JobDetail() {
   const handleAccept = async (vendorId: string) => {
     if (!jobId) return;
     try {
-      await acceptRecommendation(jobId, vendorId);
-      // Refresh data
-      loadData();
+      const vendorName = recommendations?.recommendations.find(v => v.vendorId === vendorId)?.vendorName || 'Vendor';
+      await acceptRecommendation(jobId, vendorId, vendorName);
+      // Update local state to reflect acceptance
+      setAcceptedVendorId(vendorId);
+      setOverriddenVendorId(null);
+      setSuccessMessage(`✓ ${vendorName} has been assigned to this job`);
+      // Update job status locally
+      if (job) {
+        setJob({ ...job, status: 'assigned', recommendationStatus: 'accepted' });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to accept recommendation');
     }
   };
 
   const handleOverrideClick = (vendor: VendorRecommendation) => {
-    setSelectedVendorForOverride(vendor);
-    setShowOverrideModal(true);
+    // If clicking override on the top recommendation, enter selection mode
+    // If clicking on another vendor, open the override modal directly
+    const topVendor = recommendations?.recommendations[0];
+    if (topVendor && vendor.vendorId === topVendor.vendorId) {
+      // User wants to override the recommendation - show selection mode
+      setIsSelectingOverride(true);
+    } else {
+      // User selected a different vendor - open override modal
+      setSelectedVendorForOverride(vendor);
+      setShowOverrideModal(true);
+    }
+  };
+
+  const handleCancelOverrideSelection = () => {
+    setIsSelectingOverride(false);
   };
 
   const handleOverrideComplete = () => {
     setShowOverrideModal(false);
+    setIsSelectingOverride(false);
+    if (selectedVendorForOverride) {
+      // Update local state to reflect override
+      setOverriddenVendorId(selectedVendorForOverride.vendorId);
+      setAcceptedVendorId(null);
+      setSuccessMessage(`✓ Override recorded: ${selectedVendorForOverride.vendorName} has been assigned instead`);
+      // Update job status locally
+      if (job) {
+        setJob({ ...job, status: 'assigned', recommendationStatus: 'overridden' });
+      }
+    }
     setSelectedVendorForOverride(null);
-    loadData();
   };
 
   if (loading) {
@@ -377,6 +621,8 @@ export function JobDetail() {
   }
 
   const topVendor = recommendations?.recommendations[0];
+  const assignedVendorId = acceptedVendorId || overriddenVendorId;
+  const isJobAssigned = assignedVendorId !== null;
 
   return (
     <main id="main-content" role="main" aria-label="Job Details">
@@ -387,6 +633,23 @@ export function JobDetail() {
             ← Back to Jobs
           </Link>
         </nav>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div
+            role="alert"
+            style={{
+              marginBottom: 'var(--spacing-lg)',
+              padding: 'var(--spacing-md)',
+              backgroundColor: '#d4edda',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-success)',
+              color: '#155724',
+            }}
+          >
+            {successMessage}
+          </div>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'var(--spacing-lg)' }}>
           {/* Job Details Panel */}
@@ -483,6 +746,13 @@ export function JobDetail() {
 
             {recommendations ? (
               <>
+                {/* ML Model Info Panel */}
+                <MLModelInfoPanel 
+                  modelInfo={recommendations.mlModelInfo}
+                  modelVersion={recommendations.modelVersion}
+                  automationLevel={recommendations.automationLevel}
+                />
+
                 {/* Recommendation metadata */}
                 <div
                   style={{
@@ -533,6 +803,33 @@ export function JobDetail() {
                   </div>
                 )}
 
+                {/* Override selection mode banner */}
+                {isSelectingOverride && (
+                  <div
+                    role="alert"
+                    style={{
+                      marginBottom: 'var(--spacing-md)',
+                      padding: 'var(--spacing-md)',
+                      backgroundColor: '#fff3cd',
+                      borderRadius: 'var(--radius-md)',
+                      border: '2px solid var(--color-warning)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div>
+                      <strong>⚠️ Override Mode:</strong> Select a different vendor below to override the AI recommendation.
+                    </div>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={handleCancelOverrideSelection}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+
                 {/* Vendor cards */}
                 {recommendations.recommendations.map((vendor, index) => (
                   <VendorCard
@@ -541,6 +838,9 @@ export function JobDetail() {
                     isTopRecommendation={index === 0}
                     onAccept={() => handleAccept(vendor.vendorId)}
                     onOverride={() => handleOverrideClick(vendor)}
+                    isAssigned={assignedVendorId === vendor.vendorId}
+                    isJobAssigned={isJobAssigned}
+                    isSelectingOverride={isSelectingOverride}
                   />
                 ))}
               </>

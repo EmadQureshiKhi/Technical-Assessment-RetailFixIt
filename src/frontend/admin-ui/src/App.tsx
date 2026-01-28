@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
 import { JobList } from './pages/JobList';
 import { JobDetail } from './pages/JobDetail';
+import { AuditLog } from './pages/AuditLog';
 import './styles/index.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
       <Routes>
         <Route path="/" element={<JobList />} />
         <Route path="/jobs/:jobId" element={<JobDetail />} />
+        <Route path="/audit" element={<AuditLog />} />
       </Routes>
     </BrowserRouter>
   );

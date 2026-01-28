@@ -70,6 +70,21 @@ export function Header() {
                 Jobs
               </Link>
             </li>
+            <li>
+              <Link
+                to="/audit"
+                style={{
+                  color: isActive('/audit') ? 'var(--color-primary)' : 'var(--color-gray-700)',
+                  textDecoration: 'none',
+                  fontWeight: isActive('/audit') ? 600 : 400,
+                  padding: 'var(--spacing-sm)',
+                  borderBottom: isActive('/audit') ? '2px solid var(--color-primary)' : 'none',
+                }}
+                aria-current={isActive('/audit') ? 'page' : undefined}
+              >
+                Audit Log
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>
