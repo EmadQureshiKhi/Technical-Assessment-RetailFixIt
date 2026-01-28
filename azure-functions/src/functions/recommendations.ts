@@ -357,30 +357,109 @@ function scoreVendor(vendor: Vendor, job: Job): ScoredVendor {
 function generateExplanation(
   vendor: Vendor,
   topFactors: ScoredVendor["factors"],
-  job: Job
+  job: Job,
+  rank: number = 1
 ): string {
-  const factorDescriptions = topFactors.map((f) => {
-    switch (f.name) {
-      case "Certification Match":
-        return `holds all required certifications for this ${job.type} job`;
-      case "Proximity":
-        return `is located nearby for quick response`;
-      case "Rating":
-        return `has an excellent ${vendor.rating}/5 customer rating`;
-      case "Completion Rate":
-        return `maintains a ${(vendor.completionRate * 100).toFixed(0)}% job completion rate`;
-      case "Available Capacity":
-        return `has available capacity to take on this job`;
-      case "Response Time":
-        return `typically responds within ${vendor.avgResponseTime} minutes`;
-      case "Quality (Low Rework)":
-        return `has a low ${(vendor.reworkRate * 100).toFixed(1)}% rework rate`;
-      default:
-        return f.name.toLowerCase();
-    }
-  });
+  // Get ML predictions for this vendor
+  const mlPreds = getMLPredictions(vendor.id, vendor);
+  
+  // Different narrative templates based on rank and vendor characteristics
+  const templates = [
+    // Template 1: Original recommendation style
+    () => {
+      const factorDescriptions = topFactors.map((f) => {
+        switch (f.name) {
+          case "Certification Match":
+            return `holds all required certifications for this ${job.type} job`;
+          case "Proximity":
+            return `is located nearby for quick response`;
+          case "Rating":
+            return `has an excellent ${vendor.rating}/5 customer rating`;
+          case "Completion Rate":
+            return `maintains a ${(vendor.completionRate * 100).toFixed(0)}% job completion rate`;
+          case "Available Capacity":
+            return `has available capacity to take on this job`;
+          case "Response Time":
+            return `typically responds within ${vendor.avgResponseTime} minutes`;
+          case "Quality (Low Rework)":
+            return `has a low ${(vendor.reworkRate * 100).toFixed(1)}% rework rate`;
+          default:
+            return f.name.toLowerCase();
+        }
+      });
+      return `${vendor.name} is recommended because they ${factorDescriptions.join(", ")}.`;
+    },
+    
+    // Template 2: Ranking focus with ML insights
+    () => {
+      const strengths: string[] = [];
+      if (mlPreds.completionProbability > 0.95) strengths.push("high predicted completion rate");
+      if (vendor.currentCapacity < vendor.maxCapacity * 0.7) strengths.push("current availability");
+      if (mlPreds.reworkProbability < 0.05) strengths.push("low rework history");
+      if (vendor.rating >= 4.5) strengths.push("excellent customer satisfaction");
+      if (vendor.avgResponseTime <= 30) strengths.push("fast response time");
+      
+      const topStrengths = strengths.slice(0, 3);
+      if (topStrengths.length === 0) topStrengths.push("overall strong performance");
+      
+      return `Ranked #${rank} due to ${topStrengths.join(", ")}.`;
+    },
+    
+    // Template 3: ML prediction focus
+    () => {
+      const completionPct = (mlPreds.completionProbability * 100).toFixed(0);
+      const reworkPct = (mlPreds.reworkProbability * 100).toFixed(0);
+      return `ML model predicts ${completionPct}% completion probability with only ${reworkPct}% rework risk. ${vendor.name} has completed ${(vendor.completionRate * 100).toFixed(0)}% of similar jobs successfully.`;
+    },
+    
+    // Template 4: Comparison/competitive focus
+    () => {
+      const advantages: string[] = [];
+      if (vendor.rating >= 4.7) advantages.push(`top-tier ${vendor.rating}/5 rating`);
+      if (vendor.avgResponseTime <= 25) advantages.push(`${vendor.avgResponseTime}-minute response time`);
+      if (vendor.completionRate >= 0.95) advantages.push(`${(vendor.completionRate * 100).toFixed(0)}% completion rate`);
+      if (vendor.reworkRate <= 0.02) advantages.push("minimal rework needed");
+      
+      if (advantages.length === 0) advantages.push("balanced performance across all metrics");
+      
+      return `${vendor.name} stands out with ${advantages.slice(0, 2).join(" and ")}. Estimated job completion in ${mlPreds.estimatedTimeHours.toFixed(1)} hours.`;
+    },
+    
+    // Template 5: Job-specific context
+    () => {
+      const jobContext = job.priority === "critical" ? "For this urgent job, " : 
+                        job.priority === "high" ? "Given the high priority, " : "";
+      const certMatch = vendor.certifications.some(c => job.requiredCertifications.includes(c));
+      const certNote = certMatch ? "meets certification requirements and " : "";
+      return `${jobContext}${vendor.name} ${certNote}offers ${vendor.rating}/5 quality with ${vendor.avgResponseTime}-min typical response. Historical data shows ${(vendor.completionRate * 100).toFixed(0)}% success rate.`;
+    },
+  ];
+  
+  // Select template based on rank and vendor characteristics for variety
+  let templateIndex: number;
+  if (rank === 1) {
+    // Top recommendation: Use ML-focused or comparison template
+    templateIndex = vendor.rating >= 4.7 ? 3 : 2;
+  } else if (rank === 2) {
+    // Second choice: Use ranking focus
+    templateIndex = 1;
+  } else if (rank <= 3) {
+    // Third choice: Use job-specific context
+    templateIndex = 4;
+  } else {
+    // Lower ranks: Use original template
+    templateIndex = 0;
+  }
+  
+  return templates[templateIndex]();
+}
 
-  return `${vendor.name} is recommended because they ${factorDescriptions.join(", ")}.`;
+// Helper function to generate rationale for a scored vendor
+function generateRationale(sv: ScoredVendor, job: Job): string {
+  const topFactors = [...sv.factors]
+    .sort((a, b) => b.contribution - a.contribution)
+    .slice(0, 3);
+  return generateExplanation(sv.vendor, topFactors, job, sv.rank);
 }
 
 // HTTP Trigger: Get Recommendations
@@ -448,7 +527,7 @@ export async function getRecommendations(
           })),
         },
         mlPredictions: mlPreds,
-        rationale: sv.explanation,
+        rationale: generateRationale(sv, job),
         riskFactors: mlPreds.reworkProbability > 0.10 ? ["Higher than average rework risk (ML predicted)"] : 
                      sv.vendor.reworkRate > 0.05 ? ["Higher than average rework rate"] : [],
         estimatedResponseTime: `${sv.vendor.avgResponseTime} minutes`,
@@ -970,7 +1049,7 @@ export async function generateRecommendations(
           })),
         },
         mlPredictions: mlPreds,
-        rationale: sv.explanation,
+        rationale: generateRationale(sv, job),
         riskFactors: mlPreds.reworkProbability > 0.10 ? ["Higher than average rework risk (ML predicted)"] : 
                      sv.vendor.reworkRate > 0.05 ? ["Higher than average rework rate"] : [],
         estimatedResponseTime: `${sv.vendor.avgResponseTime} minutes`,
