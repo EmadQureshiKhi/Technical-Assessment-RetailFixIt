@@ -16,6 +16,76 @@ import { useParams, Link } from 'react-router-dom';
 import type { Job, RecommendationResponse, VendorRecommendation } from '../types';
 import { fetchJob, generateRecommendations, acceptRecommendation } from '../services/api';
 import { OverrideModal } from '../components/OverrideModal';
+import { ToastContainer, useToast } from '../components/Toast';
+
+/**
+ * Tooltip component for help text
+ */
+function HelpTooltip({ text }: { text: string }) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  return (
+    <span
+      style={{ position: 'relative', display: 'inline-flex' }}
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+      onClick={() => setIsVisible(!isVisible)}
+    >
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '16px',
+          height: '16px',
+          borderRadius: '50%',
+          backgroundColor: 'var(--color-gray-400)',
+          color: 'var(--color-white)',
+          fontSize: '11px',
+          fontWeight: 600,
+          cursor: 'help',
+          marginLeft: '4px',
+        }}
+        aria-label="Help"
+      >
+        ?
+      </span>
+      {isVisible && (
+        <span
+          style={{
+            position: 'absolute',
+            bottom: '100%',
+            right: '0',
+            marginBottom: '8px',
+            padding: '12px',
+            backgroundColor: 'var(--color-gray-800)',
+            color: 'var(--color-white)',
+            fontSize: '12px',
+            lineHeight: '1.4',
+            borderRadius: '6px',
+            width: '280px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 100,
+          }}
+        >
+          {text}
+          <span
+            style={{
+              position: 'absolute',
+              bottom: '-6px',
+              right: '4px',
+              width: '0',
+              height: '0',
+              borderLeft: '6px solid transparent',
+              borderRight: '6px solid transparent',
+              borderTop: '6px solid var(--color-gray-800)',
+            }}
+          />
+        </span>
+      )}
+    </span>
+  );
+}
 
 /**
  * Formats a date string for display
@@ -117,13 +187,13 @@ function MLPredictions({ vendor }: { vendor: VendorRecommendation }) {
       style={{
         marginTop: 'var(--spacing-md)',
         padding: 'var(--spacing-md)',
-        backgroundColor: '#e8f4fd',
+        backgroundColor: 'var(--color-warm-100)',
         borderRadius: 'var(--radius-md)',
-        border: '1px solid #b8daff',
+        border: '1px solid var(--border-color)',
       }}
     >
-      <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-sm)', color: '#004085' }}>
-        🤖 ML Model Predictions
+      <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-sm)', color: 'var(--color-gray-700)' }}>
+        ML Model Predictions
       </h4>
       <div
         style={{
@@ -133,26 +203,26 @@ function MLPredictions({ vendor }: { vendor: VendorRecommendation }) {
         }}
       >
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-xs)', color: '#004085', marginBottom: '4px' }}>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-600)', marginBottom: '4px' }}>
             Completion Probability
           </div>
-          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: predictions.completionProbability >= 0.95 ? '#28a745' : predictions.completionProbability >= 0.85 ? '#ffc107' : '#dc3545' }}>
+          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: predictions.completionProbability >= 0.95 ? 'var(--color-success)' : predictions.completionProbability >= 0.85 ? 'var(--color-warning)' : 'var(--color-danger)' }}>
             {(predictions.completionProbability * 100).toFixed(1)}%
           </div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-xs)', color: '#004085', marginBottom: '4px' }}>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-600)', marginBottom: '4px' }}>
             Estimated Time
           </div>
-          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: '#17a2b8' }}>
+          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--color-info)' }}>
             {predictions.estimatedTimeHours.toFixed(1)} hrs
           </div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-xs)', color: '#004085', marginBottom: '4px' }}>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-600)', marginBottom: '4px' }}>
             Rework Risk
           </div>
-          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: predictions.reworkProbability <= 0.05 ? '#28a745' : predictions.reworkProbability <= 0.10 ? '#ffc107' : '#dc3545' }}>
+          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: predictions.reworkProbability <= 0.05 ? 'var(--color-success)' : predictions.reworkProbability <= 0.10 ? 'var(--color-warning)' : 'var(--color-danger)' }}>
             {(predictions.reworkProbability * 100).toFixed(1)}%
           </div>
         </div>
@@ -183,14 +253,14 @@ function MLModelInfoPanel({ modelInfo, modelVersion, automationLevel }: {
       style={{
         marginBottom: 'var(--spacing-lg)',
         padding: 'var(--spacing-md)',
-        backgroundColor: '#f0f7ff',
+        backgroundColor: 'var(--color-warm-100)',
         borderRadius: 'var(--radius-md)',
-        border: '1px solid #b8daff',
+        border: '1px solid var(--border-color)',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-sm)' }}>
-        <h3 style={{ margin: 0, fontSize: 'var(--font-size-md)', color: '#004085' }}>
-          🤖 ML Model Info
+        <h3 style={{ margin: 0, fontSize: 'var(--font-size-md)', color: 'var(--color-gray-800)' }}>
+          ML Model Info
         </h3>
         <span
           style={{
@@ -198,11 +268,11 @@ function MLModelInfoPanel({ modelInfo, modelVersion, automationLevel }: {
             borderRadius: '12px',
             fontSize: 'var(--font-size-xs)',
             fontWeight: 600,
-            backgroundColor: automationLevel === 'auto' ? '#28a745' : '#ffc107',
-            color: automationLevel === 'auto' ? 'white' : '#212529',
+            backgroundColor: automationLevel === 'auto' ? 'var(--color-success)' : 'var(--color-gray-600)',
+            color: 'white',
           }}
         >
-          {automationLevel === 'auto' ? '✓ AUTO MODE' : '⚠ ADVISORY MODE'}
+          {automationLevel === 'auto' ? 'AUTO MODE' : 'ADVISORY MODE'}
         </span>
       </div>
       <div
@@ -214,33 +284,33 @@ function MLModelInfoPanel({ modelInfo, modelVersion, automationLevel }: {
         }}
       >
         <div>
-          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Version</div>
+          <div style={{ color: 'var(--color-gray-500)', marginBottom: '2px' }}>Version</div>
           <div style={{ fontWeight: 600, fontFamily: 'monospace' }}>{modelVersion}</div>
         </div>
         <div>
-          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Algorithm</div>
+          <div style={{ color: 'var(--color-gray-500)', marginBottom: '2px' }}>Algorithm</div>
           <div style={{ fontWeight: 600 }}>{modelInfo.algorithm}</div>
         </div>
         <div>
-          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Completion Model</div>
+          <div style={{ color: 'var(--color-gray-500)', marginBottom: '2px' }}>Completion Model</div>
           <div style={{ fontWeight: 600 }}>
             {(modelInfo.completionModel.accuracy * 100).toFixed(1)}% accuracy
           </div>
         </div>
         <div>
-          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Time Model</div>
+          <div style={{ color: 'var(--color-gray-500)', marginBottom: '2px' }}>Time Model</div>
           <div style={{ fontWeight: 600 }}>
             R² = {modelInfo.timeModel.r2Score.toFixed(2)}
           </div>
         </div>
         <div>
-          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Rework Model</div>
+          <div style={{ color: 'var(--color-gray-500)', marginBottom: '2px' }}>Rework Model</div>
           <div style={{ fontWeight: 600 }}>
             {(modelInfo.reworkModel.accuracy * 100).toFixed(1)}% accuracy
           </div>
         </div>
         <div>
-          <div style={{ color: '#6c757d', marginBottom: '2px' }}>Trained</div>
+          <div style={{ color: 'var(--color-gray-500)', marginBottom: '2px' }}>Trained</div>
           <div style={{ fontWeight: 600 }}>
             {new Date(modelInfo.trainedAt).toLocaleDateString()}
           </div>
@@ -380,16 +450,16 @@ function VendorCard({
             style={{
               marginTop: 'var(--spacing-md)',
               padding: 'var(--spacing-md)',
-              backgroundColor: '#fff3cd',
+              backgroundColor: '#fef2f2',
               borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-warning)',
+              border: '1px solid #fecaca',
             }}
             role="alert"
           >
-            <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-xs)', color: '#856404' }}>
+            <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-xs)', color: 'var(--color-danger)' }}>
               Risk Factors
             </h4>
-            <ul style={{ margin: 0, paddingLeft: 'var(--spacing-lg)', fontSize: 'var(--font-size-sm)' }}>
+            <ul style={{ margin: 0, paddingLeft: 'var(--spacing-lg)', fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-700)' }}>
               {vendor.riskFactors.map((risk, index) => (
                 <li key={index}>{risk}</li>
               ))}
@@ -494,8 +564,8 @@ export function JobDetail() {
   const [selectedVendorForOverride, setSelectedVendorForOverride] = useState<VendorRecommendation | null>(null);
   const [acceptedVendorId, setAcceptedVendorId] = useState<string | null>(null);
   const [overriddenVendorId, setOverriddenVendorId] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isSelectingOverride, setIsSelectingOverride] = useState(false); // New state for override selection mode
+  const [isSelectingOverride, setIsSelectingOverride] = useState(false);
+  const toast = useToast();
 
   const loadData = useCallback(async () => {
     if (!jobId) return;
@@ -515,10 +585,10 @@ export function JobDetail() {
       if (jobData.recommendationStatus === 'accepted' || jobData.status === 'assigned') {
         // Job was already accepted - mark as assigned (use first vendor as placeholder)
         setAcceptedVendorId('previously-assigned');
-        setSuccessMessage('✓ This job has already been assigned to a vendor');
+        toast.info('This job has already been assigned to a vendor');
       } else if (jobData.recommendationStatus === 'overridden') {
         setOverriddenVendorId('previously-overridden');
-        setSuccessMessage('✓ This job was assigned via override');
+        toast.info('This job was assigned via override');
       }
 
       // Try to generate recommendations
@@ -548,13 +618,13 @@ export function JobDetail() {
       // Update local state to reflect acceptance
       setAcceptedVendorId(vendorId);
       setOverriddenVendorId(null);
-      setSuccessMessage(`✓ ${vendorName} has been assigned to this job`);
+      toast.success(`${vendorName} has been assigned to this job`);
       // Update job status locally
       if (job) {
         setJob({ ...job, status: 'assigned', recommendationStatus: 'accepted' });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to accept recommendation');
+      toast.error(err instanceof Error ? err.message : 'Failed to accept recommendation');
     }
   };
 
@@ -583,7 +653,7 @@ export function JobDetail() {
       // Update local state to reflect override
       setOverriddenVendorId(selectedVendorForOverride.vendorId);
       setAcceptedVendorId(null);
-      setSuccessMessage(`✓ Override recorded: ${selectedVendorForOverride.vendorName} has been assigned instead`);
+      toast.success(`Override recorded: ${selectedVendorForOverride.vendorName} has been assigned instead`);
       // Update job status locally
       if (job) {
         setJob({ ...job, status: 'assigned', recommendationStatus: 'overridden' });
@@ -626,6 +696,7 @@ export function JobDetail() {
 
   return (
     <main id="main-content" role="main" aria-label="Job Details">
+      <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
       <div className="container" style={{ padding: 'var(--spacing-lg) var(--spacing-md)' }}>
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" style={{ marginBottom: 'var(--spacing-lg)' }}>
@@ -633,23 +704,6 @@ export function JobDetail() {
             ← Back to Jobs
           </Link>
         </nav>
-
-        {/* Success Message */}
-        {successMessage && (
-          <div
-            role="alert"
-            style={{
-              marginBottom: 'var(--spacing-lg)',
-              padding: 'var(--spacing-md)',
-              backgroundColor: '#d4edda',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-success)',
-              color: '#155724',
-            }}
-          >
-            {successMessage}
-          </div>
-        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'var(--spacing-lg)' }}>
           {/* Job Details Panel */}
@@ -661,55 +715,55 @@ export function JobDetail() {
               <div className="card-body">
                 <dl style={{ margin: 0 }}>
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>Job ID</dt>
-                    <dd style={{ margin: 0, fontFamily: 'monospace', fontSize: 'var(--font-size-sm)' }}>
+                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>Job ID</dt>
+                    <dd style={{ margin: 0, fontFamily: 'monospace', fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>
                       {job.jobId}
                     </dd>
                   </div>
 
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>Type</dt>
-                    <dd style={{ margin: 0, textTransform: 'capitalize' }}>{job.jobType}</dd>
+                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>Type</dt>
+                    <dd style={{ margin: 0, textTransform: 'capitalize', color: 'var(--color-gray-600)' }}>{job.jobType}</dd>
                   </div>
 
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>Urgency</dt>
+                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>Urgency</dt>
                     <dd style={{ margin: 0 }}>
                       <span className={`badge badge-${job.urgencyLevel}`}>{job.urgencyLevel}</span>
                     </dd>
                   </div>
 
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>Status</dt>
+                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>Status</dt>
                     <dd style={{ margin: 0 }}>
                       <span className={`badge badge-${job.status}`}>{job.status.replace('_', ' ')}</span>
                     </dd>
                   </div>
 
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>SLA Deadline</dt>
-                    <dd style={{ margin: 0 }}>{formatDate(job.slaDeadline)}</dd>
+                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>SLA Deadline</dt>
+                    <dd style={{ margin: 0, color: 'var(--color-gray-600)' }}>{formatDate(job.slaDeadline)}</dd>
                   </div>
 
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>Location</dt>
-                    <dd style={{ margin: 0 }}>
+                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>Location</dt>
+                    <dd style={{ margin: 0, color: 'var(--color-gray-600)' }}>
                       {job.location.address}<br />
                       {job.location.city}, {job.location.state} {job.location.zipCode}
                     </dd>
                   </div>
 
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>Customer Tier</dt>
-                    <dd style={{ margin: 0, textTransform: 'capitalize' }}>{job.customerDetails.tier}</dd>
+                    <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>Customer Tier</dt>
+                    <dd style={{ margin: 0, textTransform: 'capitalize', color: 'var(--color-gray-600)' }}>{job.customerDetails.tier}</dd>
                   </div>
 
                   {job.requiredCertifications.length > 0 && (
                     <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                      <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>
+                      <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>
                         Required Certifications
                       </dt>
-                      <dd style={{ margin: 0 }}>
+                      <dd style={{ margin: 0, color: 'var(--color-gray-600)' }}>
                         <ul style={{ margin: 0, paddingLeft: 'var(--spacing-lg)' }}>
                           {job.requiredCertifications.map((cert, i) => (
                             <li key={i}>{cert}</li>
@@ -721,10 +775,10 @@ export function JobDetail() {
 
                   {job.specialRequirements.length > 0 && (
                     <div>
-                      <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-600)' }}>
+                      <dt style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-900)', fontWeight: 600 }}>
                         Special Requirements
                       </dt>
-                      <dd style={{ margin: 0 }}>
+                      <dd style={{ margin: 0, color: 'var(--color-gray-600)' }}>
                         <ul style={{ margin: 0, paddingLeft: 'var(--spacing-lg)' }}>
                           {job.specialRequirements.map((req, i) => (
                             <li key={i}>{req}</li>
@@ -781,9 +835,10 @@ export function JobDetail() {
                       </span>
                     )}
                   </div>
-                  <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
                     <span style={{ color: 'var(--color-gray-600)' }}>Overall Confidence: </span>
                     <ConfidenceIndicator confidence={recommendations.overallConfidence} />
+                    <HelpTooltip text="Overall Confidence indicates how reliable the AI system believes its vendor recommendations are for this job. Higher confidence means the system has more certainty about the ranking. Low confidence suggests careful review is recommended." />
                   </div>
                 </div>
 
@@ -794,9 +849,9 @@ export function JobDetail() {
                     style={{
                       marginBottom: 'var(--spacing-md)',
                       padding: 'var(--spacing-md)',
-                      backgroundColor: 'var(--color-primary-light)',
+                      backgroundColor: 'var(--color-warm-200)',
                       borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-primary)',
+                      border: '1px solid var(--color-gray-400)',
                     }}
                   >
                     <strong>Human Review Required:</strong> This recommendation requires operator approval before dispatch.
@@ -810,16 +865,16 @@ export function JobDetail() {
                     style={{
                       marginBottom: 'var(--spacing-md)',
                       padding: 'var(--spacing-md)',
-                      backgroundColor: '#fff3cd',
+                      backgroundColor: 'var(--color-warm-200)',
                       borderRadius: 'var(--radius-md)',
-                      border: '2px solid var(--color-warning)',
+                      border: '1px solid var(--color-gray-400)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                     }}
                   >
                     <div>
-                      <strong>⚠️ Override Mode:</strong> Select a different vendor below to override the AI recommendation.
+                      <strong>Override Mode:</strong> Select a different vendor below to override the AI recommendation.
                     </div>
                     <button
                       className="btn btn-secondary btn-sm"
