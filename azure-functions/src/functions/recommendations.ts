@@ -151,13 +151,13 @@ interface RecommendationResponse {
   correlationId: string;
 }
 
-// Sample vendors for demo
+// Sample vendors for demo - distributed across different regions
 const sampleVendors: Vendor[] = [
   {
     id: "v1",
     name: "QuickFix Pro Services",
-    certifications: ["electrical", "plumbing", "hvac"],
-    location: { latitude: 40.7128, longitude: -74.006 },
+    certifications: ["Electrical-Licensed", "HVAC-Certified", "EPA-608"],
+    location: { latitude: 40.7128, longitude: -74.006 }, // New York
     rating: 4.8,
     completionRate: 0.96,
     avgResponseTime: 25,
@@ -170,8 +170,8 @@ const sampleVendors: Vendor[] = [
   {
     id: "v2",
     name: "Reliable Repairs Inc",
-    certifications: ["electrical", "general"],
-    location: { latitude: 40.7589, longitude: -73.9851 },
+    certifications: ["Electrical-Licensed", "Safety-Inspector"],
+    location: { latitude: 34.0522, longitude: -118.2437 }, // Los Angeles
     rating: 4.5,
     completionRate: 0.92,
     avgResponseTime: 35,
@@ -184,8 +184,8 @@ const sampleVendors: Vendor[] = [
   {
     id: "v3",
     name: "Elite Maintenance Co",
-    certifications: ["electrical", "plumbing", "hvac", "refrigeration"],
-    location: { latitude: 40.6892, longitude: -74.0445 },
+    certifications: ["HVAC-Certified", "EPA-608", "Electrical-Licensed", "Safety-Inspector"],
+    location: { latitude: 41.8781, longitude: -87.6298 }, // Chicago
     rating: 4.9,
     completionRate: 0.98,
     avgResponseTime: 20,
@@ -198,8 +198,8 @@ const sampleVendors: Vendor[] = [
   {
     id: "v4",
     name: "Budget Fix Solutions",
-    certifications: ["general"],
-    location: { latitude: 40.7282, longitude: -73.7949 },
+    certifications: ["Safety-Inspector"],
+    location: { latitude: 29.7604, longitude: -95.3698 }, // Houston
     rating: 4.0,
     completionRate: 0.85,
     avgResponseTime: 60,
@@ -212,8 +212,8 @@ const sampleVendors: Vendor[] = [
   {
     id: "v5",
     name: "Premium Service Partners",
-    certifications: ["electrical", "plumbing", "hvac", "security"],
-    location: { latitude: 40.7484, longitude: -73.9857 },
+    certifications: ["Electrical-Licensed", "HVAC-Certified", "Safety-Inspector", "EPA-608"],
+    location: { latitude: 40.7484, longitude: -73.9857 }, // New York (Midtown)
     rating: 4.7,
     completionRate: 0.94,
     avgResponseTime: 30,
@@ -248,7 +248,7 @@ function calculateDistance(
 function scoreVendor(vendor: Vendor, job: Job): ScoredVendor {
   const factors: ScoredVendor["factors"] = [];
 
-  // Certification match (weight: 0.25)
+  // Certification match (weight: 0.25) - 1st
   const certMatch =
     job.requiredCertifications.filter((c) => vendor.certifications.includes(c))
       .length / Math.max(job.requiredCertifications.length, 1);
@@ -259,7 +259,16 @@ function scoreVendor(vendor: Vendor, job: Job): ScoredVendor {
     contribution: certMatch * 0.25,
   });
 
-  // Distance score (weight: 0.15)
+  // Rating score (weight: 0.20) - 2nd
+  const ratingScore = vendor.rating / 5;
+  factors.push({
+    name: "Rating",
+    value: ratingScore,
+    weight: 0.20,
+    contribution: ratingScore * 0.20,
+  });
+
+  // Distance score (weight: 0.15) - 3rd
   const distance = calculateDistance(
     job.location.latitude,
     job.location.longitude,
@@ -274,16 +283,7 @@ function scoreVendor(vendor: Vendor, job: Job): ScoredVendor {
     contribution: distanceScore * 0.15,
   });
 
-  // Rating score (weight: 0.20)
-  const ratingScore = vendor.rating / 5;
-  factors.push({
-    name: "Rating",
-    value: ratingScore,
-    weight: 0.2,
-    contribution: ratingScore * 0.2,
-  });
-
-  // Completion rate (weight: 0.15)
+  // Completion rate (weight: 0.15) - 4th
   factors.push({
     name: "Completion Rate",
     value: vendor.completionRate,
@@ -291,26 +291,26 @@ function scoreVendor(vendor: Vendor, job: Job): ScoredVendor {
     contribution: vendor.completionRate * 0.15,
   });
 
-  // Capacity score (weight: 0.10)
+  // Capacity score (weight: 0.10) - 5th
   const capacityScore =
     (vendor.maxCapacity - vendor.currentCapacity) / vendor.maxCapacity;
   factors.push({
     name: "Available Capacity",
     value: capacityScore,
-    weight: 0.1,
-    contribution: capacityScore * 0.1,
+    weight: 0.10,
+    contribution: capacityScore * 0.10,
   });
 
-  // Response time score (weight: 0.10)
+  // Response time score (weight: 0.10) - 6th
   const responseScore = Math.max(0, 1 - vendor.avgResponseTime / 120);
   factors.push({
     name: "Response Time",
     value: responseScore,
-    weight: 0.1,
-    contribution: responseScore * 0.1,
+    weight: 0.10,
+    contribution: responseScore * 0.10,
   });
 
-  // Rework rate (weight: 0.05)
+  // Rework rate (weight: 0.05) - 7th
   const reworkScore = 1 - vendor.reworkRate;
   factors.push({
     name: "Quality (Low Rework)",
@@ -510,17 +510,53 @@ export async function getRecommendations(
       };
     }
 
-    // Create sample job for demo
+    // Job data lookup - maps jobId to actual job requirements
+    const jobDataMap: Record<string, { type: string; priority: "low" | "medium" | "high" | "critical"; requiredCertifications: string[]; location: { latitude: number; longitude: number; address: string } }> = {
+      "550e8400-e29b-41d4-a716-446655440010": {
+        type: "repair",
+        priority: "high",
+        requiredCertifications: ["HVAC-Certified", "EPA-608"],
+        location: { latitude: 40.7128, longitude: -74.006, address: "123 Main St, New York, NY" },
+      },
+      "550e8400-e29b-41d4-a716-446655440011": {
+        type: "installation",
+        priority: "medium",
+        requiredCertifications: ["Electrical-Licensed"],
+        location: { latitude: 34.0522, longitude: -118.2437, address: "456 Oak Ave, Los Angeles, CA" },
+      },
+      "550e8400-e29b-41d4-a716-446655440012": {
+        type: "maintenance",
+        priority: "low",
+        requiredCertifications: [],
+        location: { latitude: 41.8781, longitude: -87.6298, address: "789 Elm St, Chicago, IL" },
+      },
+      "550e8400-e29b-41d4-a716-446655440013": {
+        type: "inspection",
+        priority: "critical",
+        requiredCertifications: ["Safety-Inspector"],
+        location: { latitude: 29.7604, longitude: -95.3698, address: "321 Pine Rd, Houston, TX" },
+      },
+    };
+
+    // Get actual job data or use defaults
+    const jobData = jobDataMap[jobId] || {
+      type: "general",
+      priority: "medium" as const,
+      requiredCertifications: ["Electrical-Licensed"],
+      location: { latitude: 40.7128, longitude: -74.006, address: "123 Main St, New York, NY" },
+    };
+
+    // Create job with actual requirements
     const job: Job = {
       id: jobId,
-      type: "electrical",
-      priority: "high",
-      location: { latitude: 40.7128, longitude: -74.006, address: "123 Main St, New York, NY" },
-      requiredCertifications: ["electrical"],
+      type: jobData.type,
+      priority: jobData.priority,
+      location: jobData.location,
+      requiredCertifications: jobData.requiredCertifications,
       estimatedDuration: 120,
       scheduledDate: new Date().toISOString(),
       customerId: "c123",
-      description: "Electrical panel inspection and repair",
+      description: `${jobData.type} job`,
     };
 
     // Score all vendors
